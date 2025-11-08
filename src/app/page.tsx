@@ -14,9 +14,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
+import { useSidebar } from '@/contexts/sidebar-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,17 +31,36 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export default function Home() {
   const [bills] = useState<Bill[]>(mockBills);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { toggleSidebar } = useSidebar();
 
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
+  const totalPages = Math.ceil(bills.length / itemsPerPage);
+  
+  const handleSelectItem = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+  
+  const handleSelectAll = () => {
+    if (selectedItems.length === bills.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(bills.map(bill => bill.id));
+    }
+  };
   
   const getLanguageLabel = (lang: string) => {
     switch(lang) {
       case 'pt': return 'Portugu\u00eas';
       case 'en': return 'English';
-      case 'es': return 'Espa\u00f1ol';
-      default: return 'Portugu\u00eas';
+      case 'es': return 'Español';
+      default: return 'Português';
     }
   };
 
@@ -57,7 +77,16 @@ export default function Home() {
       <header className="border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#0a0a0a]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9 rounded-xl"
+                onClick={toggleSidebar}
+              >
+                <PanelLeft className="h-4 w-4" />
+              </Button>
+              <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
               <h1 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{t('bills.title')}</h1>
               <span className="text-sm text-zinc-500 dark:text-zinc-400">{t('bills.breadcrumb')}</span>
             </div>
@@ -81,7 +110,7 @@ export default function Home() {
               variant="ghost" 
               size="icon" 
               className="h-9 w-9 rounded-xl"
-              onClick={toggleTheme}
+              onClick={() => toggleTheme()}
             >
               {theme === 'light' ? (
                 <Moon className="h-4 w-4" />
@@ -118,7 +147,7 @@ export default function Home() {
                 <Button variant="ghost" className="h-9 gap-2 px-2 rounded-xl">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="bg-black text-xs font-semibold text-white dark:bg-blue-600">
-                      JD
+                      MS
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -126,10 +155,15 @@ export default function Home() {
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium">Jonathan Doe</span>
-                    <span className="text-xs text-muted-foreground">johndoe@example.com</span>
+                    <span className="text-sm font-medium">Manuel Sereno</span>
+                    <span className="text-xs text-muted-foreground">nelfsereno@gmail.com</span>
                   </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                  <CircleUser className="mr-2 h-4 w-4" />
+                  Contas
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
@@ -151,7 +185,11 @@ export default function Home() {
         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700">
           {/* Toolbar */}
           <div className="border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 rounded-xl border border-zinc-200 px-2 py-1 dark:border-zinc-700">
                   <span className="text-xs text-zinc-600 dark:text-zinc-400">{t('bills.status')}</span>
@@ -177,7 +215,12 @@ export default function Home() {
           <TableHeader>
             <TableRow className="border-b border-zinc-200 bg-white hover:bg-white dark:border-zinc-800 dark:bg-[#161616]">
               <TableHead className="h-10 w-12">
-                <input type="checkbox" className="h-4 w-4 rounded-md accent-black dark:accent-white" />
+                <input 
+                  type="checkbox" 
+                  className="h-4 w-4 rounded-md accent-black dark:accent-white"
+                  checked={selectedItems.length === bills.length && bills.length > 0}
+                  onChange={handleSelectAll}
+                />
               </TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.code')}</TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.competence')}</TableHead>
@@ -195,7 +238,12 @@ export default function Home() {
             {bills.map((bill) => (
               <TableRow key={bill.id} className="border-b border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-[#161616] dark:hover:bg-[#1a1a1a]">
                 <TableCell className="py-3">
-                  <input type="checkbox" className="h-4 w-4 rounded-md accent-black dark:accent-white" />
+                  <input 
+                    type="checkbox" 
+                    className="h-4 w-4 rounded-md accent-black dark:accent-white"
+                    checked={selectedItems.includes(bill.id)}
+                    onChange={() => handleSelectItem(bill.id)}
+                  />
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="whitespace-pre-line text-xs text-zinc-600 dark:text-zinc-400">
@@ -242,18 +290,82 @@ export default function Home() {
             ))}
           </TableBody>
         </Table>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">{bills.length}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
+        
+          {/* Footer */}
+          <div className="border-t border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
+            <div className="flex items-center justify-between">
+              {/* Left: Selected items */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {selectedItems.length} de {bills.length} linha(s) selecionadas.
+                </span>
+              </div>
+              
+              {/* Center: Items per page */}
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 gap-1">
+                      <span className="text-sm">{itemsPerPage} / página</span>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center">
+                    {[3, 5, 10, 20].map((num) => (
+                      <DropdownMenuItem key={num} onClick={() => setItemsPerPage(num)}>
+                        {num}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              
+              {/* Right: Pagination + Total */}
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Página {currentPage} de {totalPages}
+                </span>
+                
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
