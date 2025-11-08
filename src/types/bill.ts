@@ -15,6 +15,30 @@ export interface Bill {
   };
   installment: string;
   amount: number;
+  details?: {
+    document?: string;
+    invoice?: string;
+    accountGroup?: string;
+    reference?: string;
+    launchDate?: string;
+    paymentDate?: string;
+    creditor?: {
+      id: string;
+      name: string;
+    };
+    debtor?: {
+      id: string;
+      name: string;
+    };
+    accountingClassification?: {
+      id: string;
+      description: string;
+    };
+    costCenter?: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
 export interface BillFilters {

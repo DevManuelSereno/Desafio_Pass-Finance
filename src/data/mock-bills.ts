@@ -17,7 +17,31 @@ export const mockBills: Bill[] = [
       secondary: 'Injepic'
     },
     installment: '2/12',
-    amount: 100.00
+    amount: 100.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '9',
+      reference: 'Palavra-chave',
+      launchDate: '05/11/2025 11:23:16',
+      paymentDate: 'Indefinido',
+      creditor: {
+        id: '#180515',
+        name: 'Injetec'
+      },
+      debtor: {
+        id: '#1204',
+        name: 'Amorim Cortinas'
+      },
+      accountingClassification: {
+        id: '#180525',
+        description: '111.01.001 - Caixa Fundo Fixo'
+      },
+      costCenter: {
+        id: '#1341',
+        name: 'Administrativo'
+      }
+    }
   },
   {
     id: '2',
@@ -35,7 +59,31 @@ export const mockBills: Bill[] = [
       secondary: 'Igor Nental Industria'
     },
     installment: '1/1',
-    amount: 198.00
+    amount: 198.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '5',
+      reference: 'Aluguel comercial',
+      launchDate: '06/11/2025 09:15:30',
+      paymentDate: 'Indefinido',
+      creditor: {
+        id: '#180520',
+        name: 'Igor Nental Industria'
+      },
+      debtor: {
+        id: '#1204',
+        name: 'Amorim Cortinas'
+      },
+      accountingClassification: {
+        id: '#180526',
+        description: 'Aluguel'
+      },
+      costCenter: {
+        id: '#1341',
+        name: 'Administrativo'
+      }
+    }
   },
   {
     id: '3',
@@ -53,7 +101,31 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '1/6',
-    amount: 150.00
+    amount: 150.00,
+    details: {
+      document: 'DOC-040',
+      invoice: 'INV-001',
+      accountGroup: '7',
+      reference: 'Aplicação financeira',
+      launchDate: '30/10/2025 14:20:00',
+      paymentDate: 'Indefinido',
+      creditor: {
+        id: '#180516',
+        name: 'Amorim Cortinas'
+      },
+      debtor: {
+        id: '#1204',
+        name: 'Amorim Cortinas'
+      },
+      accountingClassification: {
+        id: '#180527',
+        description: '111.03.002 - Aplicação Bradesco FI-FI - Ag 1311/ Cc 5249'
+      },
+      costCenter: {
+        id: '#1342',
+        name: 'Financeiro'
+      }
+    }
   },
   {
     id: '4',
@@ -71,7 +143,31 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '2/6',
-    amount: 150.00
+    amount: 150.00,
+    details: {
+      document: 'DOC-041',
+      invoice: 'INV-002',
+      accountGroup: '8',
+      reference: 'Parcela 2/6',
+      launchDate: '30/10/2025 10:30:00',
+      paymentDate: 'Indefinido',
+      creditor: {
+        id: '#180517',
+        name: 'Amorim Cortinas'
+      },
+      debtor: {
+        id: '#1204',
+        name: 'Amorim Cortinas'
+      },
+      accountingClassification: {
+        id: '#180528',
+        description: '111.02.001 - Banco Bradesco S/A'
+      },
+      costCenter: {
+        id: '#1341',
+        name: 'Administrativo'
+      }
+    }
   },
   {
     id: '5',
@@ -89,7 +185,19 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '3/6',
-    amount: 150.00
+    amount: 150.00,
+    details: {
+      document: 'DOC-042',
+      invoice: 'INV-003',
+      accountGroup: '8',
+      reference: 'Parcela 3/6',
+      launchDate: '30/10/2025 10:35:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180517', name: 'Amorim Cortinas' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180528', description: '111.02.001 - Banco Bradesco S/A' },
+      costCenter: { id: '#1341', name: 'Administrativo' }
+    }
   },
   {
     id: '6',
@@ -107,7 +215,19 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '4/6',
-    amount: 150.00
+    amount: 150.00,
+    details: {
+      document: 'DOC-043',
+      invoice: 'INV-004',
+      accountGroup: '8',
+      reference: 'Parcela 4/6',
+      launchDate: '30/10/2025 10:40:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180517', name: 'Amorim Cortinas' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180528', description: '111.02.001 - Banco Bradesco S/A' },
+      costCenter: { id: '#1341', name: 'Administrativo' }
+    }
   },
   {
     id: '7',
@@ -125,7 +245,19 @@ export const mockBills: Bill[] = [
       secondary: 'Igor Nental Industria'
     },
     installment: '1/1',
-    amount: 36.00
+    amount: 36.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '3',
+      reference: 'Conta de energia',
+      launchDate: '07/11/2025 08:00:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180521', name: 'Igor Nental Industria' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180529', description: 'Energia Elétrica' },
+      costCenter: { id: '#1343', name: 'Operações' }
+    }
   },
   {
     id: '8',
@@ -143,7 +275,19 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '1/1',
-    amount: 10.00
+    amount: 10.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '9',
+      reference: 'Pequenas despesas',
+      launchDate: '06/11/2025 11:00:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180515', name: 'Amorim Cortinas' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180525', description: '111.01.001 - Caixa Fundo Fixo' },
+      costCenter: { id: '#1341', name: 'Administrativo' }
+    }
   },
   {
     id: '9',
@@ -161,7 +305,19 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '1/1',
-    amount: 10.00
+    amount: 10.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '9',
+      reference: 'Material escritório',
+      launchDate: '30/10/2025 15:30:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180515', name: 'Amorim Cortinas' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180525', description: '111.01.001 - Caixa Fundo Fixo' },
+      costCenter: { id: '#1341', name: 'Administrativo' }
+    }
   },
   {
     id: '10',
@@ -179,6 +335,18 @@ export const mockBills: Bill[] = [
       secondary: 'Amorim Cortinas'
     },
     installment: '1/1',
-    amount: 10.00
+    amount: 10.00,
+    details: {
+      document: 'Indefinido',
+      invoice: 'Indefinido',
+      accountGroup: '9',
+      reference: 'Despesas diversas',
+      launchDate: '06/11/2025 16:45:00',
+      paymentDate: 'Indefinido',
+      creditor: { id: '#180515', name: 'Amorim Cortinas' },
+      debtor: { id: '#1204', name: 'Amorim Cortinas' },
+      accountingClassification: { id: '#180525', description: '111.01.001 - Caixa Fundo Fixo' },
+      costCenter: { id: '#1341', name: 'Administrativo' }
+    }
   }
 ];
