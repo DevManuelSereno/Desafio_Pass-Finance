@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { mockBills } from '@/data/mock-bills';
 import { Bill } from '@/types/bill';
 import {
@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -32,6 +32,7 @@ export default function Home() {
   const [bills] = useState<Bill[]>(mockBills);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const { t, language, setLanguage } = useLanguage();
@@ -41,6 +42,11 @@ export default function Home() {
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const totalPages = Math.ceil(bills.length / itemsPerPage);
   
+  // Calcular os itens da página atual
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBills = bills.slice(startIndex, endIndex);
+  
   const handleSelectItem = (id: string) => {
     setSelectedItems(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
@@ -48,10 +54,12 @@ export default function Home() {
   };
   
   const handleSelectAll = () => {
-    if (selectedItems.length === bills.length) {
-      setSelectedItems([]);
+    if (selectedItems.length === paginatedBills.length) {
+      // Desmarcar todos da página atual
+      setSelectedItems(prev => prev.filter(id => !paginatedBills.find(bill => bill.id === id)));
     } else {
-      setSelectedItems(bills.map(bill => bill.id));
+      // Marcar todos da página atual
+      setSelectedItems(prev => [...new Set([...prev, ...paginatedBills.map(bill => bill.id)])]);
     }
   };
   
@@ -109,13 +117,13 @@ export default function Home() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-xl"
+              className="h-10 w-10 rounded-xl"
               onClick={() => toggleTheme()}
             >
               {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
+                <Moon className="h-6 w-6" />
               ) : (
-                <Sun className="h-4 w-4" />
+                <Sun className="h-6 w-6" />
               )}
             </Button>
 
@@ -218,7 +226,7 @@ export default function Home() {
                 <input 
                   type="checkbox" 
                   className="h-4 w-4 rounded-md accent-black dark:accent-white"
-                  checked={selectedItems.length === bills.length && bills.length > 0}
+                  checked={paginatedBills.length > 0 && paginatedBills.every(bill => selectedItems.includes(bill.id))}
                   onChange={handleSelectAll}
                 />
               </TableHead>
@@ -235,58 +243,180 @@ export default function Home() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bills.map((bill) => (
-              <TableRow key={bill.id} className="border-b border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-[#161616] dark:hover:bg-[#1a1a1a]">
-                <TableCell className="py-3">
-                  <input 
-                    type="checkbox" 
-                    className="h-4 w-4 rounded-md accent-black dark:accent-white"
-                    checked={selectedItems.includes(bill.id)}
-                    onChange={() => handleSelectItem(bill.id)}
-                  />
-                </TableCell>
-                <TableCell className="py-3">
-                  <div className="whitespace-pre-line text-xs text-zinc-600 dark:text-zinc-400">
-                    {bill.code}
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.competenceDate}</TableCell>
-                <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.dueDate}</TableCell>
-                <TableCell className="py-3 text-xs text-zinc-600 dark:text-zinc-400">{bill.paymentInfo}</TableCell>
-                <TableCell className="py-3">
-                  <Badge 
-                    variant="secondary" 
-                    className="rounded-full bg-amber-100 px-3 py-1 text-xs font-normal text-amber-900 hover:bg-amber-100"
-                  >
-                    {t('bills.pending')}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-3">
-                  <div className="space-y-0.5">
-                    {bill.classification.code && (
-                      <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.classification.code}</div>
-                    )}
-                    <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.classification.description}</div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3">
-                  <div className="space-y-0.5">
-                    <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.participants.name}</div>
-                    {bill.participants.secondary && (
-                      <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.participants.secondary}</div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.installment}</TableCell>
-                <TableCell className="py-3 text-right text-xs font-medium text-zinc-900 dark:text-zinc-100">
-                  {formatCurrency(bill.amount)}
-                </TableCell>
-                <TableCell className="py-3">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical size={16} className="text-zinc-400" />
-                  </Button>
-                </TableCell>
-              </TableRow>
+            {paginatedBills.map((bill) => (
+              <Fragment key={bill.id}>
+                <TableRow 
+                  key={bill.id} 
+                  className="border-b border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-[#161616] dark:hover:bg-[#1a1a1a] cursor-pointer"
+                  onClick={() => setExpandedRow(expandedRow === bill.id ? null : bill.id)}
+                >
+                  <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
+                    <input 
+                      type="checkbox" 
+                      className="h-4 w-4 rounded-md accent-black dark:accent-white"
+                      checked={selectedItems.includes(bill.id)}
+                      onChange={() => handleSelectItem(bill.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="whitespace-pre-line text-xs text-zinc-600 dark:text-zinc-400">
+                      {bill.code}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.competenceDate}</TableCell>
+                  <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.dueDate}</TableCell>
+                  <TableCell className="py-3 text-xs text-zinc-600 dark:text-zinc-400">{bill.paymentInfo}</TableCell>
+                  <TableCell className="py-3">
+                    <Badge 
+                      variant="secondary" 
+                      className="rounded-full bg-amber-100 px-3 py-1 text-xs font-normal text-amber-900 hover:bg-amber-100"
+                    >
+                      {t('bills.pending')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="space-y-0.5">
+                      {bill.classification.code && (
+                        <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.classification.code}</div>
+                      )}
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.classification.description}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="space-y-0.5">
+                      <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.participants.name}</div>
+                      {bill.participants.secondary && (
+                        <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.participants.secondary}</div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.installment}</TableCell>
+                  <TableCell className="py-3 text-right text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                    {formatCurrency(bill.amount)}
+                  </TableCell>
+                  <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical size={16} className="text-zinc-400" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                
+                {/* Expanded Details Row */}
+                {expandedRow === bill.id && bill.details && (
+                  <TableRow key={`${bill.id}-details`} className="border-b border-zinc-100 bg-[#FAFAFA] dark:border-zinc-800 dark:bg-[#171717]">
+                    <TableCell colSpan={11} className="p-6">
+                      <div className="space-y-0">
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-6">
+                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                            Conta a Pagar - {bill.code.split('\n')[0]}
+                          </h3>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => setExpandedRow(null)}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Dados Gerais */}
+                        <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-6">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                              <span className="text-xs">ℹ</span>
+                            </div>
+                            <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Dados Gerais</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 gap-x-8 gap-y-4">
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Conta</label>
+                              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{bill.code.split('\n')[0]}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Lançamento</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.launchDate}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Quitação</label>
+                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.paymentDate}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Status</label>
+                              <Badge 
+                                variant="secondary" 
+                                className="rounded-full bg-amber-100 px-3 py-1 text-xs font-normal text-amber-900"
+                              >
+                                {bill.status}
+                              </Badge>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Documento/Contrato</label>
+                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.document}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Fatura</label>
+                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.invoice}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Conta/Grupo</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.accountGroup}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Referência</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.reference}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Participantes */}
+                        <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-6">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                              <span className="text-xs">👥</span>
+                            </div>
+                            <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Participantes</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Credor ({bill.details.creditor?.id})</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.creditor?.name}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Devedor ({bill.details.debtor?.id})</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.debtor?.name}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contábil */}
+                        <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-6">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                              <span className="text-xs">📊</span>
+                            </div>
+                            <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Contábil</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Classificação Gerencial ({bill.details.accountingClassification?.id})</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.accountingClassification?.description}</p>
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Centro de Custo ({bill.details.costCenter?.id})</label>
+                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.costCenter?.name}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
             ))}
           </TableBody>
         </Table>
@@ -311,8 +441,11 @@ export default function Home() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="center">
-                    {[3, 5, 10, 20].map((num) => (
-                      <DropdownMenuItem key={num} onClick={() => setItemsPerPage(num)}>
+                    {[5, 10, 15, 20].map((num) => (
+                      <DropdownMenuItem key={num} onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset para primeira página ao mudar itens por página
+                      }}>
                         {num}
                       </DropdownMenuItem>
                     ))}
