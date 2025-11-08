@@ -23,17 +23,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/language-context';
 
-interface MenuItem {
-  labelKey: string;
-  icon: React.ReactNode;
-  href: string;
-}
-
-interface MenuSection {
-  titleKey: string;
-  items: MenuItem[];
-}
-
 interface MenuData {
   titleKey: string;
   items: Array<{
@@ -89,7 +78,6 @@ const menuData: MenuData[] = [
 
 const getIcon = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {
-    Building2: <Building2 size={2}/>,
     LayoutDashboard: <LayoutDashboard size={18} />,
     Activity: <Activity size={18} />,
     ArrowRightLeft: <ArrowRightLeft size={18} />,

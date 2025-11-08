@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Grid3x3, SlidersHorizontal, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import {
@@ -146,39 +146,38 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Toolbar */}
-      <div className="border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#0a0a0a]">
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl border border-zinc-200 px-2 py-1 dark:border-zinc-700">
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">{t('bills.status')}</span>
-              <Badge variant="secondary" className="rounded-full bg-zinc-200 px-2 py-0 text-xs dark:bg-zinc-700">
-                lf1805(6)
-              </Badge>
-              <button className="text-zinc-400">×</button>
-            </div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">29/02/2012 - 17/07/2039</span>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-              <Grid3x3 size={16} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-              <SlidersHorizontal size={16} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-              <Settings size={16} />
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Table */}
       <div className="flex-1 overflow-auto px-6 py-4">
         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700">
-        <Table>
+          {/* Toolbar */}
+          <div className="border-b border-zinc-200 bg-white px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
+            <div className="flex items-center justify-end">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 rounded-xl border border-zinc-200 px-2 py-1 dark:border-zinc-700">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">{t('bills.status')}</span>
+                  <Badge variant="secondary" className="rounded-full bg-zinc-200 px-2 py-0 text-xs dark:bg-zinc-700">
+                    lf1805(6)
+                  </Badge>
+                  <button className="text-zinc-400">×</button>
+                </div>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">29/02/2012 - 17/07/2039</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                  <Grid3x3 size={16} />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                  <SlidersHorizontal size={16} />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                  <Settings2 size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <Table>
           <TableHeader>
             <TableRow className="border-b border-zinc-200 bg-white hover:bg-white dark:border-zinc-800 dark:bg-[#161616]">
               <TableHead className="h-10 w-12">
-                <input type="checkbox" className="h-4 w-4" />
+                <input type="checkbox" className="h-4 w-4 rounded-md accent-black dark:accent-white" />
               </TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.code')}</TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.competence')}</TableHead>
@@ -196,7 +195,7 @@ export default function Home() {
             {bills.map((bill) => (
               <TableRow key={bill.id} className="border-b border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-[#161616] dark:hover:bg-[#1a1a1a]">
                 <TableCell className="py-3">
-                  <input type="checkbox" className="h-4 w-4" />
+                  <input type="checkbox" className="h-4 w-4 rounded-md accent-black dark:accent-white" />
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="whitespace-pre-line text-xs text-zinc-600 dark:text-zinc-400">
