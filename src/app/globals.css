@@ -70,7 +70,7 @@
 
 .dark {
   /* Dark Theme - Baseado no design fornecido */
-  --background: 10 10 10; /* #0a0a0a */
+  --background: 23 23 23; /* #0a0a0a */
   --foreground: 255 255 255; /* #ffffff */
   --card: 22 22 22; /* #161616 */
   --card-foreground: 255 255 255;
