@@ -163,7 +163,7 @@ export function Sidebar() {
           {isCollapsed ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Button variant="ghost" size="icon" className="h-10 w-10 cursor-pointer">
                   <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-black dark:bg-blue-600">
                     <Building2 size={16} className="text-white" />
                   </div>
@@ -200,7 +200,7 @@ export function Sidebar() {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-10 w-full justify-start gap-3 px-2 hover:bg-transparent">
+                <Button variant="ghost" className="h-10 w-full justify-start gap-3 px-2 hover:bg-transparent cursor-pointer">
                   <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-black dark:bg-blue-600">
                     <Building2 size={16} className="text-white" />
                   </div>
