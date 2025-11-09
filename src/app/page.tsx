@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { mockBills } from '@/data/mock-bills';
 import { Bill } from '@/types/bill';
 import {
@@ -40,6 +40,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [activeFilterCategory, setActiveFilterCategory] = useState<string | null>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [selectedSubFilters, setSelectedSubFilters] = useState<Record<string, string[]>>({
     payment: [],
     status: [],
@@ -78,6 +79,18 @@ export default function Home() {
     
     return true;
   });
+
+  // Detectar tamanho da tela
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 500);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
   const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
@@ -196,8 +209,8 @@ export default function Home() {
             >
               <PanelLeft className="h-4 w-4" />
             </Button>
-            <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
-            <h1 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hidden sm:block">Finanças</h1>
+            <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <h1 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Finanças</h1>
           </div>
           
           <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
@@ -376,11 +389,14 @@ export default function Home() {
                             </div>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent 
-                            side="right" 
-                            align="start"
-                            sideOffset={5}
+                            side={isSmallScreen ? "bottom" : "right"}
+                            align={isSmallScreen ? "start" : "start"}
+                            sideOffset={isSmallScreen ? 8 : 5}
+                            alignOffset={isSmallScreen ? 0 : -10}
                             className="w-64 rounded-xl p-2"
                             data-submenu
+                            collisionPadding={10}
+                            avoidCollisions={true}
                           >
                             <div className="px-2 pb-2">
                               <div className="relative">
@@ -411,7 +427,7 @@ export default function Home() {
                                       type="checkbox"
                                       checked={selectedSubFilters[option.id]?.includes(subOption.value) || false}
                                       onChange={() => {}}
-                                      className="h-4 w-4 rounded cursor-pointer border-zinc-300 dark:border-zinc-600 flex-shrink-0"
+                                      className="h-4 w-4 rounded-[5px] cursor-pointer bg-white dark:bg-black border border-zinc-400/30 dark:border-zinc-500/30 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white appearance-none checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] dark:checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy5MTEgMSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')] bg-center bg-no-repeat flex-shrink-0"
                                       onClick={(e) => e.stopPropagation()}
                                     />
                                     <span className="text-sm truncate">{subOption.value}</span>
