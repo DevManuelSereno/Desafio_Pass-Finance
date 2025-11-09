@@ -12,7 +12,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="flex">
       <Sidebar />
-      <main className={`w-full transition-all duration-300 ${isCollapsed ? 'ml-[60px]' : 'ml-[240px]'}`}>
+      <main className={`w-full transition-all duration-300 ${isCollapsed ? 'ml-0 lg:ml-[60px]' : 'ml-0 lg:ml-[240px]'}`}>
         {children}
       </main>
     </div>
