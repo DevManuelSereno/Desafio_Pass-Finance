@@ -31,22 +31,40 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export default function Home() {
   const [bills] = useState<Bill[]>(mockBills);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableSearchTerm, setTableSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme, mounted } = useTheme();
   const { toggleSidebar } = useSidebar();
 
-  const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const totalPages = Math.ceil(bills.length / itemsPerPage);
+  // Filtrar contas com base na busca
+  const filteredBills = bills.filter(bill => {
+    if (!tableSearchTerm) return true;
+    const searchLower = tableSearchTerm.toLowerCase();
+    const idMatch = bill.id.padStart(6, '0').includes(searchLower);
+    const participantMatch = bill.participants.name.toLowerCase().includes(searchLower) ||
+                            (bill.participants.secondary?.toLowerCase().includes(searchLower) || false);
+    return idMatch || participantMatch;
+  });
+
+  const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+  const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
   
   // Calcular os itens da página atual
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedBills = bills.slice(startIndex, endIndex);
+  const paginatedBills = filteredBills.slice(startIndex, endIndex);
+  
+  const toggleFilter = (filter: string) => {
+    setSelectedFilters(prev => 
+      prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+    );
+  };
   
   const handleSelectItem = (id: string) => {
     setSelectedItems(prev => 
@@ -66,7 +84,7 @@ export default function Home() {
   
   const getLanguageLabel = (lang: string) => {
     switch(lang) {
-      case 'pt': return 'Portugu\u00eas';
+      case 'pt': return 'Português';
       case 'en': return 'English';
       case 'es': return 'Español';
       default: return 'Português';
@@ -81,7 +99,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-zinc-50 dark:bg-[#0a0a0a]">
+    <div className="flex h-full flex-col bg-white dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#0a0a0a]">
         <div className="flex items-center justify-between">
@@ -95,8 +113,7 @@ export default function Home() {
               <PanelLeft className="h-4 w-4" />
             </Button>
             <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
-            <h1 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hidden sm:block">{t('bills.title')}</h1>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden md:block">{t('bills.breadcrumb')}</span>
+            <h1 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hidden sm:block">Finanças</h1>
           </div>
           
           <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
@@ -119,7 +136,7 @@ export default function Home() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-xl lg:hidden"
+              className="h-9 w-9 rounded-xl lg:hidden bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
             >
               <Search className="h-5 w-5" />
@@ -226,17 +243,54 @@ export default function Home() {
       </header>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
+      <div className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-3 md:py-4 scrollbar-hide">
         <div className="overflow-hidden rounded-xl md:rounded-2xl border border-zinc-200 dark:border-zinc-800">
           {/* Toolbar */}
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Button size="sm" className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
-                  <Plus className="h-3.5 w-3.5" />
-                  <span className="text-xs">Adicionar</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex">
+                  <LayoutPanelLeft size={16}/>
                 </Button>
-                <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden sm:flex">
+                      <ListFilter size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56 rounded-xl">
+                    <DropdownMenuLabel className="text-xs font-normal text-zinc-600 dark:text-zinc-400">Filtrar modo...</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => toggleFilter('payment')} className="flex items-center justify-between">
+                      <span className="text-sm">Quitação</span>
+                      {selectedFilters.includes('payment') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">8</span>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleFilter('status')} className="flex items-center justify-between">
+                      <span className="text-sm">Status</span>
+                      {selectedFilters.includes('status') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">2</span>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleFilter('classification')} className="flex items-center justify-between">
+                      <span className="text-sm">Classificação</span>
+                      {selectedFilters.includes('classification') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">5</span>}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                  <Settings size={16} />
+                </Button>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden lg:inline">29/02/2012 - 17/07/2039</span>
+                <div className="relative hidden lg:flex items-center flex-1 max-w-xs">
+                  <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-400" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por ID ou Participante..."
+                    className="h-8 pl-8 pr-3 text-xs rounded-lg border-zinc-200 dark:border-zinc-700"
+                    value={tableSearchTerm}
+                    onChange={(e) => setTableSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg">
                   <RefreshCw className="h-3.5 w-3.5" />
                   <span className="text-xs">Atualizar</span>
@@ -245,29 +299,15 @@ export default function Home() {
                   <Download className="h-3.5 w-3.5" />
                   <span className="text-xs">Export</span>
                 </Button>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1 rounded-xl border border-zinc-200 px-2 py-1 dark:border-zinc-700">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">{t('bills.status')}</span>
-                  <Badge variant="secondary" className="rounded-full bg-zinc-200 px-2 py-0 text-xs dark:bg-zinc-700">
-                    lf1805(6)
-                  </Badge>
-                  <button className="text-zinc-400">×</button>
-                </div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden lg:inline">29/02/2012 - 17/07/2039</span>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex">
-                  <LayoutPanelLeft size={16}/>
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden sm:flex">
-                  <ListFilter size={16} />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                  <Settings size={16} />
+                <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <Button size="sm" className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="text-xs">Adicionar</span>
                 </Button>
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-hide">
           <Table>
           <TableHeader>
             <TableRow className="border-b border-zinc-200 bg-white hover:bg-white dark:border-zinc-800 dark:bg-[#161616]">
@@ -279,7 +319,7 @@ export default function Home() {
                   onChange={handleSelectAll}
                 />
               </TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.code')}</TableHead>
+              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.id')}</TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.competence')}</TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.due')}</TableHead>
               <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.payment')}</TableHead>
@@ -308,8 +348,8 @@ export default function Home() {
                     />
                   </TableCell>
                   <TableCell className="py-3">
-                    <div className="whitespace-pre-line text-xs text-zinc-600 dark:text-zinc-400">
-                      {bill.code}
+                    <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                      {bill.id.padStart(6, '0')}
                     </div>
                   </TableCell>
                   <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.competenceDate}</TableCell>
@@ -371,7 +411,7 @@ export default function Home() {
                         {/* Header */}
                         <div className="flex items-center justify-between pb-4 md:pb-6">
                           <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                            Conta a Pagar - {bill.code.split('\n')[0]}
+                            Conta a Pagar - {bill.id.split('\n')[0]}
                           </h3>
                           <Button 
                             variant="ghost" 
@@ -404,7 +444,7 @@ export default function Home() {
                               <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.paymentDate}</p>
                             </div>
                             <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400 pr-2">Status</label>
+                              <label className="text-xs text-zinc-600 dark:text-zinc-400 pr-3">Status</label>
                               <Badge 
                                 variant="secondary"
                               >

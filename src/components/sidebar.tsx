@@ -240,7 +240,7 @@ export function Sidebar() {
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
           {menuData.map((section) => (
             <div key={section.titleKey} className="mb-6">
               {!isCollapsed && (
