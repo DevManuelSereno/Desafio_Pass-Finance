@@ -32,24 +32,51 @@ export default function Home() {
   const [bills] = useState<Bill[]>(mockBills);
   const [searchTerm, setSearchTerm] = useState('');
   const [tableSearchTerm, setTableSearchTerm] = useState('');
+  const [filterSearchTerm, setFilterSearchTerm] = useState('');
+  const [subFilterSearchTerm, setSubFilterSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [activeFilterCategory, setActiveFilterCategory] = useState<string | null>(null);
+  const [selectedSubFilters, setSelectedSubFilters] = useState<Record<string, string[]>>({
+    payment: [],
+    status: [],
+    classification: []
+  });
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme, mounted } = useTheme();
   const { toggleSidebar } = useSidebar();
 
-  // Filtrar contas com base na busca
+  // Filtrar contas com base na busca e filtros
   const filteredBills = bills.filter(bill => {
-    if (!tableSearchTerm) return true;
-    const searchLower = tableSearchTerm.toLowerCase();
-    const idMatch = bill.id.padStart(6, '0').includes(searchLower);
-    const participantMatch = bill.participants.name.toLowerCase().includes(searchLower) ||
-                            (bill.participants.secondary?.toLowerCase().includes(searchLower) || false);
-    return idMatch || participantMatch;
+    // Filtro de busca por ID ou Participante
+    if (tableSearchTerm) {
+      const searchLower = tableSearchTerm.toLowerCase();
+      const idMatch = bill.id.padStart(6, '0').includes(searchLower);
+      const participantMatch = bill.participants.name.toLowerCase().includes(searchLower) ||
+                              (bill.participants.secondary?.toLowerCase().includes(searchLower) || false);
+      if (!idMatch && !participantMatch) return false;
+    }
+    
+    // Filtro de Quitação
+    if (selectedSubFilters.payment && selectedSubFilters.payment.length > 0) {
+      const payment = bill.paymentInfo || 'Indefinido';
+      if (!selectedSubFilters.payment.includes(payment)) return false;
+    }
+    
+    // Filtro de Status
+    if (selectedSubFilters.status && selectedSubFilters.status.length > 0) {
+      if (!selectedSubFilters.status.includes(bill.status)) return false;
+    }
+    
+    // Filtro de Classificação
+    if (selectedSubFilters.classification && selectedSubFilters.classification.length > 0) {
+      if (!selectedSubFilters.classification.includes(bill.classification.description)) return false;
+    }
+    
+    return true;
   });
 
   const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
@@ -60,9 +87,66 @@ export default function Home() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedBills = filteredBills.slice(startIndex, endIndex);
   
-  const toggleFilter = (filter: string) => {
-    setSelectedFilters(prev => 
-      prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
+  const toggleSubFilter = (category: string, value: string) => {
+    setSelectedSubFilters(prev => {
+      const current = prev[category] || [];
+      const updated = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [category]: updated };
+    });
+  };
+  
+  // Contar quantas contas têm cada tipo de status/classificação/quitação
+  const paymentCounts = bills.reduce((acc, bill) => {
+    const payment = bill.paymentInfo || 'Indefinido';
+    acc[payment] = (acc[payment] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const statusCounts = bills.reduce((acc, bill) => {
+    acc[bill.status] = (acc[bill.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const classificationCounts = bills.reduce((acc, bill) => {
+    const classification = bill.classification.description;
+    acc[classification] = (acc[classification] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  // Filtros principais
+  const filterOptions = [
+    { id: 'payment', label: 'Quitação' },
+    { id: 'status', label: 'Status' },
+    { id: 'classification', label: 'Classificação' },
+  ].filter(option => 
+    option.label.toLowerCase().includes(filterSearchTerm.toLowerCase())
+  );
+  
+  // Sub-opções de filtros
+  const getSubFilterOptions = (category: string) => {
+    let options: { value: string; count: number }[] = [];
+    
+    if (category === 'payment') {
+      options = Object.entries(paymentCounts).map(([key, count]) => ({
+        value: key,
+        count
+      }));
+    } else if (category === 'status') {
+      options = Object.entries(statusCounts).map(([key, count]) => ({
+        value: key,
+        count
+      }));
+    } else if (category === 'classification') {
+      options = Object.entries(classificationCounts).map(([key, count]) => ({
+        value: key,
+        count
+      }));
+    }
+    
+    return options.filter(option =>
+      option.value.toLowerCase().includes(subFilterSearchTerm.toLowerCase())
     );
   };
   
@@ -254,25 +338,102 @@ export default function Home() {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden sm:flex">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
                       <ListFilter size={16} />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 rounded-xl">
-                    <DropdownMenuLabel className="text-xs font-normal text-zinc-600 dark:text-zinc-400">Filtrar modo...</DropdownMenuLabel>
+                  <DropdownMenuContent 
+                    align="start" 
+                    className="w-56 rounded-xl p-2"
+                  >
+                    <div className="px-2 pb-2">
+                      <div className="relative">
+                        <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
+                        <Input
+                          type="text"
+                          placeholder="Filtrar modo..."
+                          className="h-8 pl-7 pr-2 text-xs rounded-lg"
+                          value={filterSearchTerm}
+                          onChange={(e) => setFilterSearchTerm(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => toggleFilter('payment')} className="flex items-center justify-between">
-                      <span className="text-sm">Quitação</span>
-                      {selectedFilters.includes('payment') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">8</span>}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleFilter('status')} className="flex items-center justify-between">
-                      <span className="text-sm">Status</span>
-                      {selectedFilters.includes('status') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">2</span>}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleFilter('classification')} className="flex items-center justify-between">
-                      <span className="text-sm">Classificação</span>
-                      {selectedFilters.includes('classification') && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded">5</span>}
-                    </DropdownMenuItem>
+                    <div className="max-h-64 overflow-y-auto">
+                      {filterOptions.map((option) => (
+                        <DropdownMenu key={option.id}>
+                          <DropdownMenuTrigger asChild>
+                            <div
+                              className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm"
+                              onMouseEnter={() => {
+                                setActiveFilterCategory(option.id);
+                                setSubFilterSearchTerm('');
+                              }}
+                            >
+                              <span>{option.label}</span>
+                              <ChevronDown className="h-4 w-4 -rotate-90" />
+                            </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent 
+                            side="right" 
+                            align="start"
+                            sideOffset={5}
+                            className="w-64 rounded-xl p-2"
+                            data-submenu
+                          >
+                            <div className="px-2 pb-2">
+                              <div className="relative">
+                                <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
+                                <Input
+                                  type="text"
+                                  placeholder="Buscar..."
+                                  className="h-8 pl-7 pr-2 text-xs rounded-lg"
+                                  value={subFilterSearchTerm}
+                                  onChange={(e) => setSubFilterSearchTerm(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </div>
+                            <DropdownMenuSeparator />
+                            <div className="max-h-64 overflow-y-auto">
+                              {getSubFilterOptions(option.id).map((subOption) => (
+                                <div
+                                  key={subOption.value}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSubFilter(option.id, subOption.value);
+                                  }}
+                                  className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                >
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSubFilters[option.id]?.includes(subOption.value) || false}
+                                      onChange={() => {}}
+                                      className="h-4 w-4 rounded cursor-pointer border-zinc-300 dark:border-zinc-600 flex-shrink-0"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <span className="text-sm truncate">{subOption.value}</span>
+                                  </div>
+                                  <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{subOption.count}</span>
+                                </div>
+                              ))}
+                              {getSubFilterOptions(option.id).length === 0 && (
+                                <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                                  Nenhuma opção encontrada
+                                </div>
+                              )}
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ))}
+                      {filterOptions.length === 0 && (
+                        <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                          Nenhum filtro encontrado
+                        </div>
+                      )}
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
