@@ -44,9 +44,9 @@
   /* Light Theme - Baseado no design fornecido */
   --background: 250 250 250; /* #fafafa */
   --foreground: 10 10 10; /* #0a0a0a */
-  --card: 255 255 255; /* #ffffff */
+  --card: 250 250 250; /* #ffffff */
   --card-foreground: 10 10 10;
-  --popover: 255 255 255;
+  --popover: 250 250 250;
   --popover-foreground: 10 10 10;
   --primary: 59 130 246; /* blue-500 */
   --primary-foreground: 255 255 255;
@@ -135,4 +135,15 @@
 
 [data-slot="dropdown-menu-content"] {
   z-index: 50 !important;
+}
+
+/* Hide scrollbar */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
