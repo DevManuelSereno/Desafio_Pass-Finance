@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Grid3x3, SlidersHorizontal, Settings, Settings2, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, Info, Store, ChartNoAxesColumn } from 'lucide-react';
+import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, Info, Store, ChartNoAxesColumn, Edit, Trash2, RefreshCw, Download, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -37,7 +37,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const { t, language, setLanguage } = useLanguage();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   const { toggleSidebar } = useSidebar();
 
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
@@ -81,7 +81,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-50 dark:bg-[#0a0a0a]">
+    <div className="flex h-full flex-col bg-zinc-50 dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#0a0a0a]">
         <div className="flex items-center justify-between">
@@ -131,8 +131,11 @@ export default function Home() {
               size="icon" 
               className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
               onClick={() => toggleTheme()}
+              suppressHydrationWarning
             >
-              {theme === 'light' ? (
+              {!mounted ? (
+                <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
+              ) : theme === 'light' ? (
                 <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
               ) : (
                 <Moon className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -174,17 +177,23 @@ export default function Home() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
                 <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">Manuel Sereno</span>
-                    <span className="text-xs text-muted-foreground">nelfsereno@gmail.com</span>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-black text-xs font-semibold text-white dark:bg-blue-600">
+                        MS
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Manuel Sereno</span>
+                      <span className="text-xs text-muted-foreground">nelfsereno@gmail.com</span>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                <DropdownMenuItem>
                   <CircleUser className="mr-2 h-4 w-4" />
                   Contas
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   Configurações
@@ -218,13 +227,24 @@ export default function Home() {
 
       {/* Table */}
       <div className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-3 md:py-4">
-        <div className="overflow-hidden rounded-xl md:rounded-2xl border border-zinc-200 dark:border-zinc-700">
+        <div className="overflow-hidden rounded-xl md:rounded-2xl border border-zinc-200 dark:border-zinc-800">
           {/* Toolbar */}
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
-                <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
+                <Button size="sm" className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="text-xs">Adicionar</span>
+                </Button>
+                <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span className="text-xs">Atualizar</span>
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg">
+                  <Download className="h-3.5 w-3.5" />
+                  <span className="text-xs">Export</span>
+                </Button>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1 rounded-xl border border-zinc-200 px-2 py-1 dark:border-zinc-700">
@@ -236,13 +256,13 @@ export default function Home() {
                 </div>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden lg:inline">29/02/2012 - 17/07/2039</span>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex">
-                  <Grid3x3 size={16} />
+                  <LayoutPanelLeft size={16}/>
                 </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden sm:flex">
-                  <SlidersHorizontal size={16} />
+                  <ListFilter size={16} />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                  <Settings2 size={16} />
+                  <Settings size={16} />
                 </Button>
               </div>
             </div>
@@ -323,9 +343,23 @@ export default function Home() {
                     {formatCurrency(bill.amount)}
                   </TableCell>
                   <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical size={16} className="text-zinc-400" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical size={16} className="text-zinc-400" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar pagamento
+                        </DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir pagamento
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
                 
@@ -443,6 +477,16 @@ export default function Home() {
         </Table>
         </div>
         
+          {/* Total above footer */}
+          <div className="border-t border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-2 dark:border-zinc-800 dark:bg-[#161616]">
+            <div className="flex justify-end">
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
+                <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
+              </div>
+            </div>
+          </div>
+        
           {/* Footer */}
           <div className="border-t border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -457,12 +501,12 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 gap-1">
-                      <span className="text-xs sm:text-sm">{itemsPerPage} / página</span>
-                      <ChevronDown className="h-3 w-3" />
+                    <Button variant="outline" size="sm" className="h-9 gap-1 rounded-lg border-zinc-300 dark:border-zinc-600">
+                      <span className="text-sm">{itemsPerPage} / página</span>
+                      <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center">
+                  <DropdownMenuContent align="center" className="rounded-xl">
                     {[5, 10, 15, 20].map((num) => (
                       <DropdownMenuItem key={num} onClick={() => {
                         setItemsPerPage(num);
@@ -477,42 +521,42 @@ export default function Home() {
               
               {/* Right: Pagination + Total */}
               <div className="flex items-center gap-2 sm:gap-4">
-                <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="text-sm text-zinc-600 dark:text-zinc-400">
                   Página {currentPage} de {totalPages}
                 </span>
                 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="icon" 
-                    className="h-8 w-8 hidden sm:flex"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
                   >
                     <ChevronsLeft className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="icon" 
-                    className="h-8 w-8"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="icon" 
-                    className="h-8 w-8"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600"
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="icon" 
-                    className="h-8 w-8 hidden sm:flex"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
                   >

@@ -154,10 +154,10 @@ export function Sidebar() {
         "lg:block",
         isCollapsed ? "w-[60px] -translate-x-full lg:translate-x-0" : "w-60"
       )}>
-        <div className="flex h-full flex-col mt-2">
+        <div className="flex h-full flex-col pt-2">
         {/* Logo/Company Selector */}
         <div className={cn(
-          "flex h-14 items-center border-b border-border mx-3",
+          "flex h-16 items-center border-b border-border mx-3",
           isCollapsed ? "justify-center" : "justify-start"
         )}>
           {isCollapsed ? (

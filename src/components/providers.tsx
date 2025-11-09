@@ -10,10 +10,12 @@ function LayoutContent({ children }: { children: ReactNode }) {
   const { isCollapsed } = useSidebar();
   
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <main className={`w-full transition-all duration-300 ${isCollapsed ? 'ml-0 lg:ml-[60px]' : 'ml-0 lg:ml-[240px]'}`}>
-        {children}
+      <main className={`w-full transition-all duration-300 ${isCollapsed ? 'ml-0 lg:ml-[60px]' : 'ml-0 lg:ml-[240px]'} pt-2 pb-2 pr-3`}>
+        <div className="w-full h-[calc(100vh-1rem)] rounded-2xl overflow-hidden shadow-sm">
+          {children}
+        </div>
       </main>
     </div>
   );
