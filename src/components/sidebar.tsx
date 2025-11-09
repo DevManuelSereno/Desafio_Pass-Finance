@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Building2,
   LayoutDashboard,
   Activity,
-  ArrowRightLeft,
+  BusFront,
   Package,
   BedDouble,
   Ticket,
@@ -15,6 +15,7 @@ import {
   MapPin,
   Map,
   DollarSign,
+  WalletMinimal,
   CalendarDays,
   Puzzle,
   Target,
@@ -58,7 +59,7 @@ const menuData: MenuData[] = [
   {
     titleKey: 'menu.servicos',
     items: [
-      { labelKey: 'menu.transfer', iconName: 'ArrowRightLeft', href: '/' },
+      { labelKey: 'menu.transfer', iconName: 'BusFront', href: '/' },
       { labelKey: 'menu.combo', iconName: 'Package', href: '/' },
       { labelKey: 'menu.hospedagem', iconName: 'BedDouble', href: '/' },
       { labelKey: 'menu.ingresso', iconName: 'Ticket', href: '/' },
@@ -72,7 +73,7 @@ const menuData: MenuData[] = [
     items: [
       { labelKey: 'menu.tarifario', iconName: 'DollarSign', href: '/' },
       { labelKey: 'menu.disponibilidade', iconName: 'CalendarDays', href: '/' },
-      { labelKey: 'menu.financas', iconName: 'DollarSign', href: '/' },
+      { labelKey: 'menu.financas', iconName: 'WalletMinimal', href: '/' },
     ]
   },
   {
@@ -95,7 +96,7 @@ const getIcon = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {
     LayoutDashboard: <LayoutDashboard size={18} />,
     Activity: <Activity size={18} />,
-    ArrowRightLeft: <ArrowRightLeft size={18} />,
+    BusFront: <BusFront size={18} />,
     Package: <Package size={18} />,
     BedDouble: <BedDouble size={18} />,
     Ticket: <Ticket size={18} />,
@@ -104,6 +105,7 @@ const getIcon = (iconName: string) => {
     MapPin: <MapPin size={18} />,
     Map: <Map size={18}/>,
     DollarSign: <DollarSign size={18} />,
+    WalletMinimal: <WalletMinimal size={18} />,
     CalendarDays: <CalendarDays size={18} />,
     Puzzle: <Puzzle size={18} />,
     Target: <Target size={18} />,
@@ -116,8 +118,20 @@ const getIcon = (iconName: string) => {
 export function Sidebar() {
   const pathname = usePathname();
   const { t } = useLanguage();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const [selectedCompany, setSelectedCompany] = useState('Pass');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const companies = [
     { name: 'Pass', icon: Building2 },
@@ -126,11 +140,21 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 z-40 h-screen bg-background transition-all duration-300",
-      isCollapsed ? "w-[60px]" : "w-60"
-    )}>
-      <div className="flex h-full flex-col mt-2">
+    <>
+      {/* Overlay para mobile */}
+      {!isCollapsed && (
+        <div 
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={toggleSidebar} 
+        />
+      )}
+      
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-screen bg-background transition-all duration-300",
+        "lg:block",
+        isCollapsed ? "w-[60px] -translate-x-full lg:translate-x-0" : "w-60"
+      )}>
+        <div className="flex h-full flex-col mt-2">
         {/* Logo/Company Selector */}
         <div className={cn(
           "flex h-14 items-center border-b border-border mx-3",
@@ -139,66 +163,76 @@ export function Sidebar() {
           {isCollapsed ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black dark:bg-blue-600">
+                <Button variant="ghost" size="icon" className="h-10 w-10 cursor-pointer">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-black dark:bg-blue-600">
                     <Building2 size={16} className="text-white" />
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" className="w-56 ml-2">
-                <DropdownMenuLabel>Empresas</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              <DropdownMenuContent 
+                side={isMobile ? "bottom" : "right"}
+                align="start" 
+                sideOffset={8}
+                className="w-64 lg:w-56 ml-0 lg:ml-2 rounded-2xl lg:rounded-xl border-2 lg:border p-2 z-50"
+              >
+                <DropdownMenuLabel className="px-3 py-2.5 text-sm font-normal text-muted-foreground">Empresas</DropdownMenuLabel>
+                <DropdownMenuSeparator className="my-1" />
                 {companies.map((company) => (
                   <DropdownMenuItem
                     key={company.name}
                     onClick={() => setSelectedCompany(company.name)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-3 px-3 py-2.5 my-0.5 rounded-xl cursor-pointer transition-colors"
                   >
-                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted">
-                      <company.icon size={14} />
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-muted">
+                      <company.icon size={16} />
                     </div>
-                    <span className="flex-1">{company.name}</span>
-                    {selectedCompany === company.name && <Check size={16} />}
+                    <span className="flex-1 text-sm font-medium">{company.name}</span>
+                    {selectedCompany === company.name && <Check size={18} className="text-foreground shrink-0" />}
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2">
-                  <Plus size={16} />
-                  <span>Adicionar Organização</span>
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 my-0.5 rounded-xl cursor-pointer text-muted-foreground transition-colors">
+                  <Plus size={18} className="shrink-0" />
+                  <span className="text-sm">Adicionar Organização</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-10 w-full justify-start gap-3 px-2 hover:bg-transparent">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black dark:bg-blue-600">
+                <Button variant="ghost" className="h-10 w-full justify-start gap-3 px-2 hover:bg-transparent cursor-pointer">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-black dark:bg-blue-600">
                     <Building2 size={16} className="text-white" />
                   </div>
                   <span className="flex-1 text-left text-sm font-semibold">{selectedCompany}</span>
                   <ChevronsUpDown size={16} className="text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" className="w-56 ml-2">
-                <DropdownMenuLabel>Empresas</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              <DropdownMenuContent 
+                side={isMobile ? "bottom" : "right"}
+                align="start" 
+                sideOffset={8}
+                className="w-64 lg:w-56 ml-0 lg:ml-2 rounded-2xl lg:rounded-xl border-2 lg:border p-2 z-50"
+              >
+                <DropdownMenuLabel className="px-3 py-2.5 text-sm font-normal text-muted-foreground">Empresas</DropdownMenuLabel>
+                <DropdownMenuSeparator className="my-1" />
                 {companies.map((company) => (
                   <DropdownMenuItem
                     key={company.name}
                     onClick={() => setSelectedCompany(company.name)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-3 px-3 py-2.5 my-0.5 rounded-xl cursor-pointer transition-colors"
                   >
-                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted">
-                      <company.icon size={14} />
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-muted">
+                      <company.icon size={16} />
                     </div>
-                    <span className="flex-1">{company.name}</span>
-                    {selectedCompany === company.name && <Check size={16} />}
+                    <span className="flex-1 text-sm font-medium">{company.name}</span>
+                    {selectedCompany === company.name && <Check size={18} className="text-foreground shrink-0" />}
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2 opacity-60">
-                  <Plus size={16} />
-                  <span>Adicionar Organização</span>
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 my-0.5 rounded-xl cursor-pointer text-muted-foreground transition-colors">
+                  <Plus size={18} className="shrink-0" />
+                  <span className="text-sm">Adicionar Organização</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -241,5 +275,6 @@ export function Sidebar() {
         </nav>
       </div>
     </aside>
+    </>
   );
 }
