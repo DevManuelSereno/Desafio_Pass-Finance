@@ -7,6 +7,7 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: (event?: React.MouseEvent) => void;
+  mounted: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,14 +16,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
+  // Load theme from localStorage and set mounted state
   useEffect(() => {
-    setMounted(true);
     const savedTheme = localStorage.getItem('theme') as Theme | null;
-    if (savedTheme) {
+    
+    // Batch state updates together
+    if (savedTheme && savedTheme !== theme) {
       setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     }
-  }, []);
+    
+    // Apply initial theme class
+    document.documentElement.classList.toggle('dark', (savedTheme || theme) === 'dark');
+    
+    setMounted(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  useEffect(() => {
+    // Apply theme class to document when theme changes after mount
+    if (mounted) {
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    }
+  }, [theme, mounted]);
 
   const toggleTheme = async (event?: React.MouseEvent) => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -73,7 +88,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   );
