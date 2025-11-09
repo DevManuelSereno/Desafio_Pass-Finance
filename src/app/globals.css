@@ -137,12 +137,58 @@
   z-index: 50 !important;
 }
 
-/* Hide scrollbar */
+/* Custom Scrollbar Styling */
 @layer utilities {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(212 212 216); /* zinc-300 */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(161 161 170); /* zinc-400 */
+    background-clip: padding-box;
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgb(63 63 70); /* zinc-700 */
+    background-clip: padding-box;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgb(82 82 91); /* zinc-600 */
+    background-clip: padding-box;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(212 212 216) transparent; /* thumb track */
+  }
+
+  .dark * {
+    scrollbar-color: rgb(63 63 70) transparent;
+  }
+
+  /* Hide scrollbar utility (mantém para componentes específicos que precisam ocultar) */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
