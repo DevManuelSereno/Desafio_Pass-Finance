@@ -7,9 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![Shadcn/UI](https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff&style=for-the-badge)] (https://ui.shadcn.com/)
-[![Deploy](https://img.shields.io/badge/Ver_Projeto_Ao_Vivo-black?style=for-the-badge&logo=vercel&logoColor=white)](https://pass-finance-demo.vercel.app) ---
-
-[Insira um GIF ou Screenshot do projeto aqui]
+[![Deploy](https://img.shields.io/badge/Ver_Projeto_Ao_Vivo-black?style=for-the-badge&logo=vercel&logoColor=white)](https://desafio-pass-finance.vercel.app) ---
 
 > ## 📖 Documentação Completa
 >
