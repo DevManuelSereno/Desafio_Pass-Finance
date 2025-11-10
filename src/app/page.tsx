@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, Store, ChartNoAxesColumn, Edit, Trash2, RefreshCw, Download, Plus } from 'lucide-react';
+import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Download, Plus, Bot } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -40,10 +40,10 @@ export default function Home() {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showAITooltip, setShowAITooltip] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [activeFilterCategory, setActiveFilterCategory] = useState<string | null>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [selectedSubFilters, setSelectedSubFilters] = useState<Record<string, string[]>>({
     payment: [],
@@ -350,6 +350,50 @@ export default function Home() {
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
+                {/* AI Assistant Button */}
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg cursor-pointer bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%,transparent_100%)] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0] dark:before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.2)_50%,transparent_75%,transparent_100%)]"
+                    onMouseEnter={() => setShowAITooltip(true)}
+                    onMouseLeave={() => setShowAITooltip(false)}
+                  >
+                    <Bot size={16} className="text-white dark:text-black relative z-10" />
+                  </Button>
+                  {showAITooltip && (
+                    <div
+                      className="absolute top-full left-0 mt-2 w-72 p-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                      onMouseEnter={() => setShowAITooltip(true)}
+                      onMouseLeave={() => setShowAITooltip(false)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-white dark:bg-black rounded-lg flex items-center justify-center">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="text-black dark:text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm mb-1">@passAI</div>
+                          <p className="text-xs text-zinc-300 dark:text-zinc-600 leading-relaxed mb-2">
+                            Use the AI assistant to generate reports directly from your dashboard.
+                          </p>
+                          <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                            Powered by PASS — © 2025
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex cursor-pointer">
                   <LayoutPanelLeft size={16}/>
                 </Button>
@@ -384,7 +428,6 @@ export default function Home() {
                             <div
                               className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm"
                               onMouseEnter={() => {
-                                setActiveFilterCategory(option.id);
                                 setSubFilterSearchTerm('');
                               }}
                             >

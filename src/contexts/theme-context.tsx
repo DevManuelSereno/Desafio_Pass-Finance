@@ -39,7 +39,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, mounted]);
 
-  const toggleTheme = async (event?: React.MouseEvent) => {
+  const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
 
     // Check if View Transitions API is supported
