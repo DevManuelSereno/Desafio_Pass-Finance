@@ -6,7 +6,6 @@
 [![React](https://img.shields.io/badge/React-19.2.0-61dafb?style=flat&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![Shadcn/UI](https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff&style=for-the-badge)] (https://ui.shadcn.com/)
 
 ## 🚀 **Veja o projeto ao vivo:** [**https://desafio-pass-finance.vercel.app/**](https://desafio-pass-finance.vercel.app/)
 
