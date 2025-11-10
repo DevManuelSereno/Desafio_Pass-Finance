@@ -5,7 +5,6 @@ import { Bill } from '@/types/bill';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -42,7 +41,6 @@ import {
   Receipt,
   FileText,
   StickyNote,
-  ChevronDown,
   ChevronRight,
   X,
   MoreHorizontal,

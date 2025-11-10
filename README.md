@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pass Finance 💰
 
-## Getting Started
+> Sistema moderno de gestão financeira desenvolvido com Next.js 16, React 19, TypeScript, Tailwind CSS e Shadcn/UI.
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.1-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.0-61dafb?style=flat&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+[![Shadcn/UI](https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff&style=for-the-badge)] (https://ui.shadcn.com/)
+[![Deploy](https://img.shields.io/badge/Ver_Projeto_Ao_Vivo-black?style=for-the-badge&logo=vercel&logoColor=white)](https://pass-finance-demo.vercel.app) ---
+
+[Insira um GIF ou Screenshot do projeto aqui]
+
+> ## 📖 Documentação Completa
+>
+> Este `README` oferece uma visão geral. Para uma análise técnica detalhada da arquitetura, componentes, contextos, tipos e boas práticas:
+>
+> ### **[Acesse a Documentação Completa do Projeto](./Documentação_Projeto.md)**
+
+---
+
+## 🎯 Visão Geral
+
+Pass Finance é um sistema completo de gestão financeira desenvolvido para o desafio da Pass. O projeto oferece uma interface moderna, intuitiva e responsiva para gerenciamento de contas a pagar e receber.
+
+### ✨ Principais Funcionalidades
+
+* **Interface Moderna:** Design clean e profissional com suporte a **Dark Mode**.
+* **Internacionalização:** Suporte para 🌍 Português, Inglês e Espanhol.
+* **Filtros Avançados:** Sistema completo de busca e filtros hierárquicos.
+* **Tabela Dinâmica:** Paginação, seleção múltipla e ordenação.
+* **Modais Completos:** Cadastro e edição de pagamentos com validação e sistema de parcelamento inteligente.
+* **Totalmente Responsivo:** Experiência perfeita em desktop, tablet e mobile.
+
+## 🛠 Stack de Tecnologias
+
+* **Core:** Next.js 16, React 19, TypeScript 5
+* **UI & Styling:** Tailwind CSS 4, Shadcn UI, Radix UI, Lucide React
+* **Fontes:** Geist Font (Sans & Mono)
+* **Dev Tools:** ESLint 9, PostCSS
+
+## 🚀 Rodando o Projeto
+
+### Requisitos
+
+* **Node.js**: >= 18.0.0
+* **npm** ou **yarn**
+
+### Instalação
 
 ```bash
+# 1. Clone o repositório
+git clone [https://github.com/seu-usuario/pass-finance.git](https://github.com/seu-usuario/pass-finance.git)
+
+# 2. Entre na pasta
+cd pass-finance
+
+# 3. Instale as dependências
+npm install
+# ou
+yarn install
+
+### Executando
+
+```bash
+# Inicia o servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📜 Scripts Principais
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Descrição |
+|--------|-----------|
+| `npm run dev` | Inicia o servidor de desenvolvimento |
+| `npm run build` | Cria a build de produção otimizada |
+| `npm run start` | Inicia o servidor de produção |
+| `npm run lint` | Executa o ESLint para verificar o código |
 
-## Learn More
+## 📄 Licença
 
-To learn more about Next.js, take a look at the following resources:
+Este projeto foi desenvolvido para o desafio da Pass e é de propriedade exclusiva da empresa.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👤 Autor
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Desenvolvido com ❤️ por **Manuel Sereno**
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Email: nelfsereno@gmail.com
+* GitHub: [@ManuelSereno](https://github.com/ManuelSereno)
