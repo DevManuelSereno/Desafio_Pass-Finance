@@ -3,6 +3,8 @@
 import { useState, Fragment, useEffect } from 'react';
 import { mockBills } from '@/data/mock-bills';
 import { Bill } from '@/types/bill';
+import { AccountPayableModal } from '@/components/account-payable-modal';
+import { AddPaymentModal } from '@/components/add-payment-modal';
 import {
   Table,
   TableBody,
@@ -14,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, Info, Store, ChartNoAxesColumn, Edit, Trash2, RefreshCw, Download, Plus } from 'lucide-react';
+import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, Store, ChartNoAxesColumn, Edit, Trash2, RefreshCw, Download, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -35,7 +37,9 @@ export default function Home() {
   const [filterSearchTerm, setFilterSearchTerm] = useState('');
   const [subFilterSearchTerm, setSubFilterSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -204,7 +208,7 @@ export default function Home() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-xl"
+              className="h-9 w-9 rounded-xl cursor-pointer"
               onClick={toggleSidebar}
             >
               <PanelLeft className="h-4 w-4" />
@@ -243,7 +247,7 @@ export default function Home() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl cursor-pointer"
               onClick={() => toggleTheme()}
               suppressHydrationWarning
             >
@@ -259,7 +263,7 @@ export default function Home() {
             {/* Language Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 gap-1 px-2 sm:gap-2 sm:px-3 rounded-xl">
+                <Button variant="ghost" className="h-9 gap-1 px-2 sm:gap-2 sm:px-3 rounded-xl cursor-pointer">
                   <Globe className="h-5 w-5 sm:h-4 sm:w-4" />
                   <span className="text-xs hidden md:inline">{getLanguageLabel(language)}</span>
                   <ChevronDown className="h-3 w-3" />
@@ -281,7 +285,7 @@ export default function Home() {
             {/* User Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 gap-2 px-1 sm:px-2 rounded-xl">
+                <Button variant="ghost" className="h-9 gap-2 px-1 sm:px-2 rounded-xl cursor-pointer">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="bg-black text-xs font-semibold text-white dark:bg-blue-600">
                       MS
@@ -304,16 +308,16 @@ export default function Home() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <CircleUser className="mr-2 h-4 w-4" />
                   Contas
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Configurações
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-red-600 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
@@ -346,12 +350,12 @@ export default function Home() {
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex cursor-pointer">
                   <LayoutPanelLeft size={16}/>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
                       <ListFilter size={16} />
                     </Button>
                   </DropdownMenuTrigger>
@@ -452,7 +456,7 @@ export default function Home() {
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
                   <Settings size={16} />
                 </Button>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden lg:inline">29/02/2012 - 17/07/2039</span>
@@ -468,16 +472,20 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg">
+                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg cursor-pointer">
                   <RefreshCw className="h-3.5 w-3.5" />
                   <span className="text-xs">Atualizar</span>
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg">
+                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg cursor-pointer">
                   <Download className="h-3.5 w-3.5" />
                   <span className="text-xs">Export</span>
                 </Button>
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
-                <Button size="sm" className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+                <Button 
+                  size="sm" 
+                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                  onClick={() => setShowPaymentModal(true)}
+                >
                   <Plus className="h-3.5 w-3.5" />
                   <span className="text-xs">Adicionar</span>
                 </Button>
@@ -514,7 +522,10 @@ export default function Home() {
                 <TableRow 
                   key={bill.id} 
                   className="border-b border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-[#161616] dark:hover:bg-[#1a1a1a] cursor-pointer"
-                  onClick={() => setExpandedRow(expandedRow === bill.id ? null : bill.id)}
+                  onClick={() => {
+                    setSelectedBill(bill);
+                    setShowAccountModal(true);
+                  }}
                 >
                   <TableCell className="py-3" onClick={(e) => e.stopPropagation()}>
                     <input 
@@ -579,115 +590,6 @@ export default function Home() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-                
-                {/* Expanded Details Row */}
-                {expandedRow === bill.id && bill.details && (
-                  <TableRow key={`${bill.id}-details`} className="border-b border-zinc-100 bg-[#FAFAFA] dark:border-zinc-800 dark:bg-[#171717]">
-                    <TableCell colSpan={11} className="p-3 sm:p-4 md:p-6">
-                      <div className="space-y-0">
-                        {/* Header */}
-                        <div className="flex items-center justify-between pb-4 md:pb-6">
-                          <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                            Conta a Pagar - {bill.id.split('\n')[0]}
-                          </h3>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 sm:h-8 sm:w-8"
-                            onClick={() => setExpandedRow(null)}
-                          >
-                            <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                        </div>
-
-                        {/* Dados Gerais */}
-                        <div className="space-y-3 md:space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-4 md:py-6">
-                          <div className="flex items-center gap-2">
-                              <Info size={14} className="sm:w-4 sm:h-4" />
-                            <h4 className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">Dados Gerais</h4>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-4">
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Conta</label>
-                              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{bill.code.split('\n')[0]}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Lançamento</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.launchDate}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Quitação</label>
-                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.paymentDate}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400 pr-3">Status</label>
-                              <Badge 
-                                variant="secondary"
-                              >
-                                {bill.status}
-                              </Badge>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Documento/Contrato</label>
-                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.document}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Fatura</label>
-                              <p className="text-sm text-zinc-600 dark:text-zinc-400">{bill.details.invoice}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Conta/Grupo</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.accountGroup}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Referência</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.reference}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Participantes */}
-                        <div className="space-y-3 md:space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-4 md:py-6">
-                          <div className="flex items-center gap-2">
-                              <Store size={14} className="sm:w-4 sm:h-4"  />
-                            <h4 className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">Participantes</h4>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-4">
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Credor ({bill.details.creditor?.id})</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.creditor?.name}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Devedor ({bill.details.debtor?.id})</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.debtor?.name}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Contábil */}
-                        <div className="space-y-3 md:space-y-4 border-t border-zinc-200 dark:border-zinc-700 py-4 md:py-6">
-                          <div className="flex items-center gap-2">
-                              <ChartNoAxesColumn size={14} className="sm:w-4 sm:h-4"/>
-                            <h4 className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">Contábil</h4>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-4">
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Classificação Gerencial ({bill.details.accountingClassification?.id})</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.accountingClassification?.description}</p>
-                            </div>
-                            <div>
-                              <label className="text-xs text-zinc-600 dark:text-zinc-400">Centro de Custo ({bill.details.costCenter?.id})</label>
-                              <p className="text-sm text-zinc-900 dark:text-zinc-100">{bill.details.costCenter?.name}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
               </Fragment>
             ))}
           </TableBody>
@@ -718,7 +620,7 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 gap-1 rounded-lg border-zinc-300 dark:border-zinc-600">
+                    <Button variant="outline" size="sm" className="h-9 gap-1 rounded-lg border-zinc-300 dark:border-zinc-600 cursor-pointer">
                       <span className="text-sm">{itemsPerPage} / página</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -746,7 +648,7 @@ export default function Home() {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex cursor-pointer"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
                   >
@@ -755,7 +657,7 @@ export default function Home() {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 cursor-pointer"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                   >
@@ -764,7 +666,7 @@ export default function Home() {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 cursor-pointer"
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
                   >
@@ -773,7 +675,7 @@ export default function Home() {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex"
+                    className="h-9 w-9 rounded-lg border-zinc-300 dark:border-zinc-600 hidden sm:flex cursor-pointer"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
                   >
@@ -785,6 +687,21 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AccountPayableModal
+        bill={selectedBill}
+        open={showAccountModal}
+        onOpenChange={setShowAccountModal}
+        onAddPayment={() => {
+          setShowAccountModal(false);
+          setShowPaymentModal(true);
+        }}
+      />
+      <AddPaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+      />
     </div>
   );
 }
