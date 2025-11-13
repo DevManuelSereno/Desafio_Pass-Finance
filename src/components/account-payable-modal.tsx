@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Bill } from '@/types/bill';
 import {
   Dialog,
@@ -12,7 +11,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -21,10 +32,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -35,20 +47,19 @@ import {
 } from '@/components/ui/table';
 import {
   Info,
-  Store,
-  ChartNoAxesColumn,
   DollarSign,
   Receipt,
   FileText,
-  StickyNote,
   ChevronRight,
   X,
   MoreHorizontal,
   Upload,
   Search,
   Plus,
+  Pencil,
+  Trash2,
+  Banknote,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface AccountPayableModalProps {
   bill: Bill | null;
@@ -63,20 +74,6 @@ export function AccountPayableModal({
   onOpenChange,
   onAddPayment,
 }: AccountPayableModalProps) {
-  const [openSections, setOpenSections] = useState({
-    general: true,
-    participants: true,
-    accounting: true,
-    financial: true,
-    totals: true,
-    payments: true,
-    files: false,
-    notes: false,
-  });
-
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -101,55 +98,88 @@ export function AccountPayableModal({
   if (!bill) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl p-0 gap-0">
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b bg-background">
-          <div className="flex items-center gap-3">
-            <DialogTitle className="text-lg font-semibold">
-              Conta a Pagar - {bill.id.padStart(6, '0')}
-            </DialogTitle>
-            <Badge variant={getStatusVariant(bill.status)}>
-              {bill.status}
-            </Badge>
+    <TooltipProvider>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-5xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+          {/* Header */}
+          <div className="sticky top-0 z-10 flex items-start justify-between px-6 py-6 bg-background">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="h-12 w-12 rounded-full bg-background border flex items-center justify-center flex-shrink-0">
+                <Banknote className="h-5 w-5 text-foreground" />
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <div className="flex items-center gap-3">
+                  <DialogTitle className="text-lg font-semibold">
+                    Conta a Pagar
+                  </DialogTitle>
+                  <Badge variant={getStatusVariant(bill.status)}>
+                    {bill.status}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  ID do pagamento: {bill.id.padStart(6, '0')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="gap-2">
+                    <Pencil className="h-4 w-4" />
+                    Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    Excluir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg cursor-pointer"
+                onClick={() => onOpenChange(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-              <Info className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-lg"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
 
-        {/* Body - Scrollable Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)] px-6 py-4 space-y-0">
-          {/* Dados Gerais */}
-          <Collapsible
-            open={openSections.general}
-            onOpenChange={() => toggleSection('general')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.general && 'rotate-90'
-                  )}
-                />
+        {/* Tabs */}
+        <Tabs defaultValue="dados-gerais" className="flex-1 flex flex-col">
+          <TabsList className="px-6 justify-start">
+            <TabsTrigger value="dados-gerais" className="gap-2 cursor-pointer">
+              <Info className="h-4 w-4" />
+              Dados Gerais
+            </TabsTrigger>
+            <TabsTrigger value="dados-financeiros" className="gap-2 cursor-pointer">
+              <DollarSign className="h-4 w-4" />
+              Dados Financeiros
+            </TabsTrigger>
+            <TabsTrigger value="pagamentos" className="gap-2 cursor-pointer">
+              <Receipt className="h-4 w-4" />
+              Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="adicionais" className="gap-2 cursor-pointer">
+              <FileText className="h-4 w-4" />
+              Adicionais
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Dados Gerais Tab */}
+          <TabsContent value="dados-gerais" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
+            {/* Informações da Conta */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Info className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Dados Gerais</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+                Dados Gerais
+              </h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Conta</Label>
@@ -183,7 +213,7 @@ export function AccountPayableModal({
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Status</Label>
                     <Select defaultValue={bill.status}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -238,36 +268,20 @@ export function AccountPayableModal({
                     />
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
 
-          <Separator />
-
-          {/* Participantes */}
-          <Collapsible
-            open={openSections.participants}
-            onOpenChange={() => toggleSection('participants')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.participants && 'rotate-90'
-                  )}
-                />
-                <Store className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Participantes</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+            {/* Participantes */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Participantes</h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
-                      Credor ({bill.details?.creditor?.id || 'f180515'})
+                      Credor
                     </Label>
                     <Select defaultValue={bill.details?.creditor?.name}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -279,10 +293,10 @@ export function AccountPayableModal({
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
-                      Devedor ({bill.details?.debtor?.id || 'f1204'})
+                      Devedor
                     </Label>
                     <Select defaultValue={bill.details?.debtor?.name}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -293,36 +307,23 @@ export function AccountPayableModal({
                     </Select>
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
+          </TabsContent>
 
-          <Separator />
-
-          {/* Contábil */}
-          <Collapsible
-            open={openSections.accounting}
-            onOpenChange={() => toggleSection('accounting')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.accounting && 'rotate-90'
-                  )}
-                />
-                <ChartNoAxesColumn className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Contábil</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+          {/* Dados Financeiros Tab */}
+          <TabsContent value="dados-financeiros" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
+            {/* Contábil */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Contábil</h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
-                      Classificação Contábil (f180525)
+                      Classificação Contábil
                     </Label>
                     <Select>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue placeholder="Selecionar..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,12 +335,12 @@ export function AccountPayableModal({
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
-                      Classificação Gerencial (f180518)
+                      Classificação Gerencial
                     </Label>
                     <Select
                       defaultValue={bill.details?.accountingClassification?.description}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -356,10 +357,10 @@ export function AccountPayableModal({
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
-                      Centro de Custo (f1341)
+                      Centro de Custo
                     </Label>
                     <Select defaultValue={bill.details?.costCenter?.name}>
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -370,29 +371,13 @@ export function AccountPayableModal({
                     </Select>
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
 
-          <Separator />
-
-          {/* Dados Financeiros */}
-          <Collapsible
-            open={openSections.financial}
-            onOpenChange={() => toggleSection('financial')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.financial && 'rotate-90'
-                  )}
-                />
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Dados Financeiros</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+            {/* Dados Financeiros */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Dados Financeiros</h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -443,7 +428,7 @@ export function AccountPayableModal({
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Previsão</Label>
                     <Select defaultValue="nao">
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -455,7 +440,7 @@ export function AccountPayableModal({
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Transação</Label>
                     <Select defaultValue="indefinido">
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -466,29 +451,16 @@ export function AccountPayableModal({
                     </Select>
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
+          </TabsContent>
 
-          <Separator />
-
-          {/* Totais */}
-          <Collapsible
-            open={openSections.totals}
-            onOpenChange={() => toggleSection('totals')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.totals && 'rotate-90'
-                  )}
-                />
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Totais</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+          {/* Pagamentos Tab */}
+          <TabsContent value="pagamentos" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
+            {/* Totais */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Totais</h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Valor</Label>
@@ -543,29 +515,13 @@ export function AccountPayableModal({
                     />
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
 
-          <Separator />
-
-          {/* Pagamentos */}
-          <Collapsible
-            open={openSections.payments}
-            onOpenChange={() => toggleSection('payments')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.payments && 'rotate-90'
-                  )}
-                />
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Pagamento</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4 space-y-3">
+            {/* Pagamentos */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Pagamento</h3>
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="relative flex-1 max-w-xs">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
@@ -588,7 +544,7 @@ export function AccountPayableModal({
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
-                          <input type="checkbox" className="h-4 w-4" />
+                          <Checkbox />
                         </TableHead>
                         <TableHead className="text-xs">ID</TableHead>
                         <TableHead className="text-xs">Cheque Nº</TableHead>
@@ -616,29 +572,16 @@ export function AccountPayableModal({
                     </div>
                   </div>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
+          </TabsContent>
 
-          <Separator />
-
-          {/* Arquivos */}
-          <Collapsible
-            open={openSections.files}
-            onOpenChange={() => toggleSection('files')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.files && 'rotate-90'
-                  )}
-                />
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Arquivos</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+          {/* Adicionais Tab */}
+          <TabsContent value="adicionais" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
+            {/* Arquivos */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Arquivos</h3>
+              <div className="space-y-4">
                 <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer">
                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
@@ -648,49 +591,32 @@ export function AccountPayableModal({
                     ou arraste e solte arquivos (.pdf, .txt, .xml)
                   </p>
                 </div>
-              </CollapsibleContent>
+              </div>
             </div>
-          </Collapsible>
 
-          <Separator />
-
-          {/* Notas */}
-          <Collapsible
-            open={openSections.notes}
-            onOpenChange={() => toggleSection('notes')}
-          >
-            <div className="py-4">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-70 transition-opacity">
-                <ChevronRight
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    openSections.notes && 'rotate-90'
-                  )}
-                />
-                <StickyNote className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Notas</h3>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
-                <Textarea
-                  placeholder="Adicionar anotações..."
-                  className="min-h-[120px]"
-                />
-              </CollapsibleContent>
+            {/* Notas */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Notas</h3>
+              <Textarea
+                placeholder="Adicionar anotações..."
+                className="min-h-[120px]"
+              />
             </div>
-          </Collapsible>
-        </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <div className="sticky bottom-0 z-10 flex items-center justify-between px-6 py-4 border-t bg-background">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" className="cursor-pointer" onClick={() => onOpenChange(false)}>
             Fechar
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
             Atualizar
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </DialogContent>
     </Dialog>
+    </TooltipProvider>
   );
 }
