@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Download, Plus, Bot } from 'lucide-react';
+import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Download, Plus, Bot, BarChart3 } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -502,12 +502,11 @@ export default function Home() {
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
                   <Settings size={16} />
                 </Button>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden lg:inline">29/02/2012 - 17/07/2039</span>
                 <div className="relative hidden lg:flex items-center flex-1 max-w-xs">
                   <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-400" />
                   <Input
                     type="text"
-                    placeholder="Buscar por ID ou Participante..."
+                    placeholder="Buscar"
                     className="h-8 pl-8 pr-3 text-xs rounded-lg border-zinc-200 dark:border-zinc-700"
                     value={tableSearchTerm}
                     onChange={(e) => setTableSearchTerm(e.target.value)}
@@ -524,6 +523,13 @@ export default function Home() {
                   <span className="text-xs">Export</span>
                 </Button>
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <Button 
+                  size="sm" 
+                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  <span className="text-xs">Análise</span>
+                </Button>
                 <Button 
                   size="sm" 
                   className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
