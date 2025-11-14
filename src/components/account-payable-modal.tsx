@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Bill } from '@/types/bill';
 import {
   Dialog,
@@ -13,11 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +58,7 @@ import {
   Pencil,
   Trash2,
   Banknote,
+  AlertCircle,
 } from 'lucide-react';
 
 interface AccountPayableModalProps {
@@ -66,6 +66,7 @@ interface AccountPayableModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddPayment?: () => void;
+  onSuccess?: () => void;
 }
 
 export function AccountPayableModal({
@@ -73,13 +74,169 @@ export function AccountPayableModal({
   open,
   onOpenChange,
   onAddPayment,
+  onSuccess,
 }: AccountPayableModalProps) {
+  // State for editable fields
+  const [isEditing, setIsEditing] = useState(false);
+  const [status, setStatus] = useState('PENDENTE');
+  const [quitacao, setQuitacao] = useState('');
+  const [documentoContrato, setDocumentoContrato] = useState('');
+  const [fatura, setFatura] = useState('');
+  const [contaGrupo, setContaGrupo] = useState('');
+  const [referencia, setReferencia] = useState('');
+  const [palavrasChave, setPalavrasChave] = useState('');
+  const [classificacaoContabil, setClassificacaoContabil] = useState('');
+  const [classificacaoGerencial, setClassificacaoGerencial] = useState('');
+  const [centroCusto, setCentroCusto] = useState('');
+  const [competencia, setCompetencia] = useState('');
+  const [vencimento, setVencimento] = useState('');
+  const [vencimentoAlterado, setVencimentoAlterado] = useState('');
+  const [numeroParcela, setNumeroParcela] = useState(1);
+  const [totalParcelas, setTotalParcelas] = useState(1);
+  const [notas, setNotas] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Update state when bill changes
+  useEffect(() => {
+    if (bill) {
+      const statusMap: Record<string, string> = {
+        'Pendente': 'PENDENTE',
+        'Pago': 'PAGO',
+        'Vencido': 'ATRASADO',
+        'Cancelado': 'CANCELADO',
+      };
+      setStatus(statusMap[bill.status] || 'PENDENTE');
+      setQuitacao('');
+      setDocumentoContrato(bill.details?.document || '');
+      setFatura(bill.details?.invoice || '');
+      setContaGrupo(bill.details?.accountGroup || '');
+      setReferencia(bill.details?.reference || '');
+      setPalavrasChave('');
+      setClassificacaoContabil(bill.classification?.code || '');
+      setClassificacaoGerencial(bill.classification?.description || '');
+      setCentroCusto(bill.details?.costCenter?.name || '');
+      
+      // Parse dates
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return '';
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+      };
+      
+      setCompetencia(parseDate(bill.competenceDate));
+      setVencimento(parseDate(bill.dueDate));
+      setVencimentoAlterado('');
+      
+      // Parse installments
+      const installmentParts = bill.installment.split('/');
+      setNumeroParcela(parseInt(installmentParts[0]) || 1);
+      setTotalParcelas(parseInt(installmentParts[1]) || 1);
+      
+      setNotas('');
+      setIsEditing(false);
+      setError(null);
+    }
+  }, [bill]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  };
+
+  const handleUpdate = async () => {
+    if (!bill) return;
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        status,
+        quitacao: quitacao || null,
+        documentoContrato: documentoContrato || null,
+        fatura: fatura || null,
+        contaGrupo: contaGrupo || null,
+        referencia: referencia || null,
+        palavrasChave: palavrasChave ? palavrasChave.split(',').map(k => k.trim()) : [],
+        classificacaoContabil: classificacaoContabil || null,
+        classificacaoGerencial: classificacaoGerencial || null,
+        centroCusto: centroCusto || null,
+        competencia: competencia || undefined,
+        vencimento: vencimento || undefined,
+        vencimentoAlterado: vencimentoAlterado || null,
+        numeroParcela,
+        totalParcelas,
+        notas: notas || null,
+      };
+
+      const response = await fetch(`/api/contas/${bill.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao atualizar conta');
+      }
+
+      // Success!
+      setIsEditing(false);
+      
+      // Call onSuccess before closing modal to ensure data refresh
+      if (onSuccess) {
+        await onSuccess();
+      }
+      
+      // Small delay to ensure UI updates
+      setTimeout(() => {
+        onOpenChange(false); // Close modal
+      }, 100);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      console.error('Erro ao atualizar conta:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!bill) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/contas/${bill.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir pagamento');
+      }
+
+      // Fechar o diálogo de confirmação e o modal
+      setShowDeleteDialog(false);
+      onOpenChange(false);
+      
+      // Atualizar a lista
+      if (onSuccess) {
+        await onSuccess();
+      }
+    } catch (err) {
+      console.error('Erro ao excluir pagamento:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao excluir pagamento');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getStatusVariant = (status: string) => {
@@ -129,11 +286,17 @@ export function AccountPayableModal({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="gap-2">
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer"
+                    onClick={() => setIsEditing(true)}
+                  >
                     <Pencil className="h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 text-destructive">
+                  <DropdownMenuItem
+                    className="gap-2 text-destructive cursor-pointer"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
                     <Trash2 className="h-4 w-4" />
                     Excluir
                   </DropdownMenuItem>
@@ -205,22 +368,23 @@ export function AccountPayableModal({
                     </Label>
                     <Input
                       type="date"
-                      defaultValue=""
+                      value={quitacao}
+                      onChange={(e) => { setQuitacao(e.target.value); setIsEditing(true); }}
                       placeholder="Indefinido"
                       className="h-9"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Status</Label>
-                    <Select defaultValue={bill.status}>
+                    <Select value={status} onValueChange={(value) => { setStatus(value); setIsEditing(true); }}>
                       <SelectTrigger className="h-9 cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Pendente">Pendente</SelectItem>
-                        <SelectItem value="Pago">Pago</SelectItem>
-                        <SelectItem value="Vencido">Vencido</SelectItem>
-                        <SelectItem value="Cancelado">Cancelado</SelectItem>
+                        <SelectItem value="PENDENTE">Pendente</SelectItem>
+                        <SelectItem value="PAGO">Pago</SelectItem>
+                        <SelectItem value="ATRASADO">Atrasado</SelectItem>
+                        <SelectItem value="CANCELADO">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -229,14 +393,16 @@ export function AccountPayableModal({
                       Documento/Contrato
                     </Label>
                     <Input
-                      defaultValue={bill.details?.document || 'Indefinido'}
+                      value={documentoContrato}
+                      onChange={(e) => { setDocumentoContrato(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Fatura</Label>
                     <Input
-                      defaultValue={bill.details?.invoice || 'Indefinido'}
+                      value={fatura}
+                      onChange={(e) => { setFatura(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -245,7 +411,8 @@ export function AccountPayableModal({
                       Conta/Grupo
                     </Label>
                     <Input
-                      defaultValue={bill.details?.accountGroup || ''}
+                      value={contaGrupo}
+                      onChange={(e) => { setContaGrupo(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -254,7 +421,8 @@ export function AccountPayableModal({
                       Referência
                     </Label>
                     <Input
-                      defaultValue={bill.details?.reference || ''}
+                      value={referencia}
+                      onChange={(e) => { setReferencia(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -263,6 +431,8 @@ export function AccountPayableModal({
                       Palavra-chave
                     </Label>
                     <Input
+                      value={palavrasChave}
+                      onChange={(e) => { setPalavrasChave(e.target.value); setIsEditing(true); }}
                       placeholder="Adicionar tags..."
                       className="h-9"
                     />
@@ -280,31 +450,21 @@ export function AccountPayableModal({
                     <Label className="text-xs text-muted-foreground">
                       Credor
                     </Label>
-                    <Select defaultValue={bill.details?.creditor?.name}>
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={bill.details?.creditor?.name || ''}>
-                          {bill.details?.creditor?.name}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={bill.details?.creditor?.name || 'N/A'}
+                      readOnly
+                      className="h-9"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Devedor
                     </Label>
-                    <Select defaultValue={bill.details?.debtor?.name}>
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={bill.details?.debtor?.name || ''}>
-                          {bill.details?.debtor?.name}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={bill.details?.debtor?.name || 'N/A'}
+                      readOnly
+                      className="h-9"
+                    />
                   </div>
                 </div>
               </div>
@@ -322,53 +482,31 @@ export function AccountPayableModal({
                     <Label className="text-xs text-muted-foreground">
                       Classificação Contábil
                     </Label>
-                    <Select>
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue placeholder="Selecionar..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">
-                          1.1.1.01.001 - Caixa Fundo Fixo
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={classificacaoContabil}
+                      onChange={(e) => { setClassificacaoContabil(e.target.value); setIsEditing(true); }}
+                      className="h-9"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Classificação Gerencial
                     </Label>
-                    <Select
-                      defaultValue={bill.details?.accountingClassification?.description}
-                    >
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem
-                          value={
-                            bill.details?.accountingClassification?.description || ''
-                          }
-                        >
-                          {bill.details?.accountingClassification?.id} -{' '}
-                          {bill.details?.accountingClassification?.description}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={classificacaoGerencial}
+                      onChange={(e) => { setClassificacaoGerencial(e.target.value); setIsEditing(true); }}
+                      className="h-9"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Centro de Custo
                     </Label>
-                    <Select defaultValue={bill.details?.costCenter?.name}>
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={bill.details?.costCenter?.name || ''}>
-                          {bill.details?.costCenter?.name}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      value={centroCusto}
+                      onChange={(e) => { setCentroCusto(e.target.value); setIsEditing(true); }}
+                      className="h-9"
+                    />
                   </div>
                 </div>
               </div>
@@ -385,7 +523,8 @@ export function AccountPayableModal({
                     </Label>
                     <Input
                       type="date"
-                      defaultValue="2025-12-31"
+                      value={competencia}
+                      onChange={(e) => { setCompetencia(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -395,7 +534,8 @@ export function AccountPayableModal({
                     </Label>
                     <Input
                       type="date"
-                      defaultValue={bill.dueDate.split('/').reverse().join('-')}
+                      value={vencimento}
+                      onChange={(e) => { setVencimento(e.target.value); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -403,7 +543,13 @@ export function AccountPayableModal({
                     <Label className="text-xs text-muted-foreground">
                       Vencimento Alterado
                     </Label>
-                    <Input type="date" placeholder="Indefinido" className="h-9" />
+                    <Input 
+                      type="date" 
+                      value={vencimentoAlterado}
+                      onChange={(e) => { setVencimentoAlterado(e.target.value); setIsEditing(true); }}
+                      placeholder="Indefinido" 
+                      className="h-9" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -411,7 +557,8 @@ export function AccountPayableModal({
                     </Label>
                     <Input
                       type="number"
-                      defaultValue={bill.installment.split('/')[0]}
+                      value={numeroParcela}
+                      onChange={(e) => { setNumeroParcela(parseInt(e.target.value) || 1); setIsEditing(true); }}
                       className="h-9"
                     />
                   </div>
@@ -421,34 +568,10 @@ export function AccountPayableModal({
                     </Label>
                     <Input
                       type="number"
-                      defaultValue={bill.installment.split('/')[1]}
+                      value={totalParcelas}
+                      onChange={(e) => { setTotalParcelas(parseInt(e.target.value) || 1); setIsEditing(true); }}
                       className="h-9"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Previsão</Label>
-                    <Select defaultValue="nao">
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sim">Sim</SelectItem>
-                        <SelectItem value="nao">Não</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Transação</Label>
-                    <Select defaultValue="indefinido">
-                      <SelectTrigger className="h-9 cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="indefinido">Indefinido</SelectItem>
-                        <SelectItem value="debito">Débito</SelectItem>
-                        <SelectItem value="credito">Crédito</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </div>
@@ -600,23 +723,47 @@ export function AccountPayableModal({
               <Textarea
                 placeholder="Adicionar anotações..."
                 className="min-h-[120px]"
+                value={notas}
+                onChange={(e) => { setNotas(e.target.value); setIsEditing(true); }}
               />
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Error Message */}
+        {error && (
+          <div className="px-6 py-3 bg-destructive/10 border-t border-destructive/20">
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="sticky bottom-0 z-10 flex items-center justify-between px-6 py-4 border-t bg-background">
           <Button variant="ghost" className="cursor-pointer" onClick={() => onOpenChange(false)}>
             Fechar
           </Button>
-          <Button className="gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
-            Atualizar
+          <Button 
+            className="gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+            onClick={handleUpdate}
+            disabled={isSubmitting || !isEditing}
+          >
+            {isSubmitting ? 'Atualizando...' : 'Atualizar'}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </DialogContent>
     </Dialog>
+    <DeleteConfirmationDialog
+      open={showDeleteDialog}
+      onOpenChange={setShowDeleteDialog}
+      onConfirm={handleDelete}
+      isDeleting={isDeleting}
+      title="Excluir pagamento?"
+      description={`Tem certeza que deseja excluir o pagamento ${bill?.id.padStart(6, '0')}? Esta ação não pode ser desfeita.`}
+    />
     </TooltipProvider>
   );
 }
