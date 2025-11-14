@@ -158,7 +158,6 @@ export function useBills(page: number = 1, limit: number = 10) {
       setPagination(data.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      console.error('Erro ao buscar contas:', err);
     } finally {
       setLoading(false);
     }

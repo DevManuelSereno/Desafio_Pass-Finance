@@ -7,6 +7,7 @@ import { AccountPayableModal } from '@/components/account-payable-modal';
 import { AddPaymentModal } from '@/components/add-payment-modal';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { ExportButton } from '@/components/export-button';
+import { AnalyticsModal } from '@/components/analytics-modal';
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ export default function Home() {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [showAITooltip, setShowAITooltip] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [billToDelete, setBillToDelete] = useState<Bill | null>(null);
@@ -222,7 +224,6 @@ export default function Home() {
       setBillToDelete(null);
       await refetch();
     } catch (err) {
-      console.error('Erro ao excluir pagamento:', err);
       alert('Erro ao excluir pagamento. Tente novamente.');
     } finally {
       setIsDeleting(false);
@@ -559,6 +560,7 @@ export default function Home() {
                 <Button 
                   size="sm" 
                   className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                  onClick={() => setShowAnalyticsModal(true)}
                 >
                   <BarChart3 className="h-3.5 w-3.5" />
                   <span className="text-xs">Análise</span>
@@ -832,6 +834,11 @@ export default function Home() {
         isDeleting={isDeleting}
         title="Excluir pagamento?"
         description={`Tem certeza que deseja excluir o pagamento ${billToDelete?.id.padStart(6, '0')}? Esta ação não pode ser desfeita.`}
+      />
+      <AnalyticsModal
+        open={showAnalyticsModal}
+        onOpenChange={setShowAnalyticsModal}
+        bills={bills}
       />
     </div>
   );

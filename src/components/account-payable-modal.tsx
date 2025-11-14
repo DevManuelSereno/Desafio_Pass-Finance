@@ -204,7 +204,6 @@ export function AccountPayableModal({
       }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      console.error('Erro ao atualizar conta:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -232,7 +231,6 @@ export function AccountPayableModal({
         await onSuccess();
       }
     } catch (err) {
-      console.error('Erro ao excluir pagamento:', err);
       setError(err instanceof Error ? err.message : 'Erro ao excluir pagamento');
     } finally {
       setIsDeleting(false);

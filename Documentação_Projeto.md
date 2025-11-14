@@ -141,350 +141,330 @@ Sistema completo de cadastro com:
 
 ### Core
 
-- **[Next.js 16.0.1](https://nextjs.org/)** - Framework React com SSR e SSG
-- **[React 19.2.0](https://reactjs.org/)** - Biblioteca JavaScript para UI
-- **[TypeScript 5](https://www.typescriptlang.org/)** - Superset tipado do JavaScript
+> Sistema moderno de gestão financeira desenvolvido com Next.js 16, React 19, TypeScript, Tailwind CSS, Prisma ORM e PostgreSQL.
 
-### UI & Styling
+---
 
-- **[Tailwind CSS 4](https://tailwindcss.com/)** - Framework CSS utility-first
-- **[Shadcn UI](https://ui.shadcn.com/)** - Sistema de componentes reutilizáveis
-  - Biblioteca de componentes copy-paste construída sobre Radix UI
-  - 14 componentes implementados: Avatar, Badge, Button, Collapsible, Dialog, Dropdown Menu, Input, Label, Select, Separator, Table, Textarea
-  - Totalmente customizável e acessível
-- **[Radix UI](https://www.radix-ui.com/)** - Primitivos de UI headless
-  - Base para os componentes Shadcn UI
-  - Garantem acessibilidade (ARIA) e comportamento correto
-- **[Lucide React](https://lucide.dev/)** - Ícones SVG modernos
-- **[class-variance-authority](https://cva.style/)** - Variantes de componentes
-- **[clsx](https://github.com/lukeed/clsx)** - Utilitário para classes condicionais
-- **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Merge de classes Tailwind
+## 📑 Índice
 
-### Fonts
+1. [Visão Geral da Arquitetura](#visão-geral-da-arquitetura)
+2. [Stack Tecnológica](#stack-tecnológica)
+3. [Estrutura de Diretórios](#estrutura-de-diretórios)
+4. [Backend & Banco de Dados](#backend--banco-de-dados)
+5. [Frontend & Componentes](#frontend--componentes)
+6. [Contextos & Estado Global](#contextos--estado-global)
+7. [Hooks Customizados](#hooks-customizados)
+8. [Tipos TypeScript](#tipos-typescript)
+9. [Funcionalidades Implementadas](#funcionalidades-implementadas)
+10. [Fluxo de Dados](#fluxo-de-dados)
+11. [Boas Práticas](#boas-práticas)
+12. [Configuração e Deploy](#configuração-e-deploy)
 
-- **[Geist Font](https://vercel.com/font)** - Família de fontes da Vercel
-  - Geist Sans (variável)
-  - Geist Mono (variável)
+---
 
-### Dev Tools
+## 🏗️ Visão Geral da Arquitetura
 
-- **[ESLint 9](https://eslint.org/)** - Linter para JavaScript/TypeScript
-- **[eslint-config-next](https://nextjs.org/docs/pages/building-your-application/configuring/eslint)** - Configuração ESLint para Next.js
-- **[PostCSS](https://postcss.org/)** - Transformador de CSS
+O Pass Finance é um sistema **full-stack** que utiliza o framework **Next.js 16** com o paradigma **App Router**, combinando renderização server-side (SSR) e client-side (CSR). A arquitetura segue o padrão **MVC** adaptado para React, com separação clara entre camadas de apresentação, lógica de negócio e acesso a dados.
 
-## 📦 Requisitos
+### Princípios Arquiteturais
 
-- **Node.js**: >= 18.0.0 (recomendado: 20.x LTS)
-- **npm**: >= 9.0.0 ou **yarn**: >= 1.22.0
-- **Sistema Operacional**: Windows, macOS ou Linux
+- **Componentização:** Interface dividida em componentes reutilizáveis e isolados
+- **Single Source of Truth:** Estado gerenciado via React Context API
+- **Type Safety:** TypeScript em todo o codebase para segurança de tipos
+- **API RESTful:** Rotas de API para comunicação backend/frontend
+- **Database-First:** Schema Prisma como fonte de verdade dos dados
 
-## 🚀 Instalação
+---
 
-### 1. Clone o repositório
+## 🛠️ Stack Tecnológica
 
-```bash
-git clone https://github.com/seu-usuario/pass-finance.git
-cd pass-finance
-```
+### Frontend
+- **Next.js 16.0.1** - Framework React com SSR/SSG
+- **React 19.2.0** - Biblioteca UI com hooks modernos
+- **TypeScript 5** - Superset tipado do JavaScript
+- **Tailwind CSS 4** - Framework CSS utility-first
+- **Shadcn/UI** - Componentes UI acessíveis e customizáveis
+- **Radix UI** - Primitives para componentes complexos
+- **Lucide React** - Biblioteca de ícones
+- **PapaParse** - Parser CSV para exportação de dados
 
-### 2. Instale as dependências
+### Backend
+- **Prisma ORM 6.1.0** - ORM TypeScript-first para PostgreSQL
+- **PostgreSQL** - Banco de dados relacional
+- **Zod** - Validação de schemas e dados
+- **Next.js API Routes** - Endpoints serverless
 
-```bash
-npm install
-# ou
-yarn install
-```
+### DevTools
+- **ESLint 9** - Linter para qualidade de código
+- **PostCSS** - Processador CSS
+- **TypeScript Compiler** - Compilação e type-checking
 
-### 3. Execute o projeto em modo de desenvolvimento
+---
 
-```bash
-npm run dev
-# ou
-yarn dev
-```
-
-### 4. Abra no navegador
-
-Acesse [http://localhost:3000](http://localhost:3000) para ver o resultado.
-
-## 📜 Scripts Disponíveis
-
-| Script | Descrição |
-|--------|-----------|
-| `npm run dev` | Inicia o servidor de desenvolvimento (porta 3000) |
-| `npm run build` | Cria build de produção otimizado |
-| `npm run start` | Inicia o servidor de produção |
-| `npm run lint` | Executa ESLint para verificar problemas no código |
-
-## 📁 Estrutura do Projeto
+## 📂 Estrutura de Diretórios
 
 ```
 pass-finance/
-├── .next/                      # Build de produção (gerado automaticamente)
-├── node_modules/               # Dependências do projeto
-├── public/                     # Arquivos estáticos públicos
-├── src/                        # Código-fonte principal
-│   ├── app/                    # App Router do Next.js 16
-│   │   ├── layout.tsx          # Layout root da aplicação
-│   │   ├── page.tsx            # Página principal (Dashboard)
-│   │   └── globals.css         # Estilos globais e variáveis CSS
-│   ├── components/             # Componentes React
-│   │   ├── ui/                 # Componentes de UI (shadcn/ui)
-│   │   │   ├── avatar.tsx
-│   │   │   ├── badge.tsx
-│   │   │   ├── button.tsx
-│   │   │   ├── collapsible.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   ├── dropdown-menu.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── label.tsx
-│   │   │   ├── select.tsx
-│   │   │   ├── separator.tsx
-│   │   │   ├── table.tsx
-│   │   │   └── textarea.tsx
-│   │   ├── account-payable-modal.tsx  # Modal de Conta a Pagar
-│   │   ├── add-payment-modal.tsx      # Modal de Adicionar Pagamento
-│   │   ├── providers.tsx              # Providers de contextos
-│   │   └── sidebar.tsx                # Sidebar de navegação
-│   ├── contexts/               # Contextos React
-│   │   ├── language-context.tsx       # Internacionalização
-│   │   ├── sidebar-context.tsx        # Estado da sidebar
-│   │   └── theme-context.tsx          # Dark/Light mode
-│   ├── data/                   # Dados mockados
-│   │   └── mock-bills.ts              # Contas a pagar mockadas
-│   ├── lib/                    # Utilitários
-│   │   └── utils.ts                   # Funções auxiliares
-│   └── types/                  # Definições de tipos TypeScript
-│       └── bill.ts                    # Tipos de contas a pagar
-├── .gitignore                  # Arquivos ignorados pelo Git
-├── components.json             # Configuração do shadcn/ui
-├── eslint.config.mjs           # Configuração do ESLint
-├── next.config.ts              # Configuração do Next.js
-├── next-env.d.ts              # Tipos do Next.js (auto-gerado)
-├── package.json               # Dependências e scripts
-├── package-lock.json          # Lock file das dependências
-├── postcss.config.mjs         # Configuração do PostCSS
-├── README.md                  # Este arquivo
-└── tsconfig.json              # Configuração do TypeScript
+├── prisma/
+│   ├── migrations/          # Histórico de migrações do banco
+│   └── schema.prisma        # Schema do banco de dados
+├── public/
+│   └── *.svg                # Assets públicos (ícones, imagens)
+├── src/
+│   ├── app/
+│   │   ├── favicon.ico      # Favicon do site
+│   │   ├── globals.css      # Estilos globais
+│   │   ├── layout.tsx       # Layout raiz da aplicação
+│   │   └── page.tsx         # Página principal (Home)
+│   ├── components/
+│   │   ├── ui/              # Componentes UI base (Shadcn)
+│   │   ├── account-payable-modal.tsx
+│   │   ├── add-payment-modal.tsx
+│   │   ├── analytics-modal.tsx
+│   │   ├── delete-confirmation-dialog.tsx
+│   │   ├── export-button.tsx
+│   │   ├── providers.tsx    # Providers de contexto
+│   │   └── sidebar.tsx
+│   ├── contexts/
+│   │   ├── language-context.tsx
+│   │   ├── sidebar-context.tsx
+│   │   └── theme-context.tsx
+│   ├── hooks/
+│   │   └── use-bills.ts     # Hook para buscar contas
+│   ├── lib/
+│   │   ├── prisma.ts        # Cliente Prisma singleton
+│   │   ├── schemas/         # Schemas Zod de validação
+│   │   │   ├── contaPagar.schema.ts
+│   │   │   └── pagamento.schema.ts
+│   │   └── utils.ts         # Utilitários gerais
+│   ├── pages/
+│   │   └── api/             # API Routes
+│   │       ├── analytics/
+│   │       │   └── index.ts
+│   │       ├── contas/
+│   │       │   ├── index.ts
+│   │       │   ├── [id].ts
+│   │       │   └── [id]/
+│   │       │       └── pagamentos.ts
+│   │       ├── pagamentos/
+│   │       │   └── [pagamentoId].ts
+│   │       └── export-data.ts
+│   └── types/
+│       └── bill.ts          # Tipos TypeScript da aplicação
+├── .env                     # Variáveis de ambiente
+├── .gitignore
+├── components.json          # Configuração Shadcn
+├── eslint.config.mjs
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── tsconfig.json
+└── README.md
 ```
 
-## 🧩 Componentes Principais
+---
 
-### Dashboard (`src/app/page.tsx`)
+## 💾 Backend & Banco de Dados
 
-Componente principal que gerencia:
+### Schema Prisma
 
-- Estado da aplicação (busca, filtros, paginação)
-- Renderização da tabela de contas
-- Modais de edição e cadastro
-- Sistema de filtros hierárquicos
-- Seleção múltipla de itens
+O banco de dados possui dois modelos principais: **ContaPagar** e **Pagamento**, com relacionamento 1:N.
 
-**Props**: Nenhuma (página root)
+**Campos Principais:**
+- **ContaPagar:** conta, credor, devedor, competência, vencimento, valor, status
+- **Pagamento:** total, caixa, tipo, dataPagamento
 
-**Estado Principal**:
-```typescript
-- bills: Bill[]                          // Lista de contas
-- searchTerm: string                     // Termo de busca global
-- tableSearchTerm: string                // Busca na tabela
-- selectedItems: string[]                // IDs selecionados
-- selectedBill: Bill | null              // Conta selecionada
-- showAccountModal: boolean              // Visibilidade do modal de conta
-- showPaymentModal: boolean              // Visibilidade do modal de pagamento
-- itemsPerPage: number                   // Itens por página
-- currentPage: number                    // Página atual
-- selectedSubFilters: Record<string, string[]>  // Filtros ativos
-```
+**Recursos:**
+- Enum `StatusConta` (PENDENTE, PAGO, ATRASADO, CANCELADO)
+- Cálculo automático de `total`, `valorPago` e `saldo`
+- Cascata de exclusão (deletar conta remove pagamentos)
+- Timestamps automáticos (`criadoEm`, `atualizadoEm`)
 
-### AccountPayableModal (`src/components/account-payable-modal.tsx`)
+### API Endpoints
 
-Modal completo para visualização e edição de contas a pagar.
+#### 1. **GET /api/contas?page=1&limit=10**
+Lista contas com paginação.
 
-**Props**:
-```typescript
-interface AccountPayableModalProps {
-  bill: Bill | null;              // Conta a ser exibida
-  open: boolean;                  // Controle de visibilidade
-  onOpenChange: (open: boolean) => void;  // Callback de mudança
-  onAddPayment?: () => void;      // Callback para adicionar pagamento
-}
-```
-
-**Características**:
-- 8 seções colapsáveis independentes
-- Formatação automática de valores monetários
-- Badges de status com cores dinâmicas
-- Tabela de pagamentos vinculados
-- Upload de arquivos com drag-and-drop
-
-### AddPaymentModal (`src/components/add-payment-modal.tsx`)
-
-Modal para cadastro de novos pagamentos com sistema de parcelamento.
-
-**Props**:
-```typescript
-interface AddPaymentModalProps {
-  open: boolean;                  // Controle de visibilidade
-  onOpenChange: (open: boolean) => void;  // Callback de mudança
-}
-```
-
-**Características**:
-- Cálculo automático de valores (desconto, juros, total)
-- Sistema de parcelamento com preview
-- Validação de campos obrigatórios
-- Feedback visual em tempo real
-- 6 seções organizadas
-
-### Sidebar (`src/components/sidebar.tsx`)
-
-Navegação lateral com suporte a collapse.
-
-**Características**:
-- Responsiva (oculta em mobile, visível em desktop)
-- Animações suaves de transição
-- Menu hierárquico multinível
-- Indicador de item ativo
-
-### Componentes UI (Shadcn UI)
-
-O projeto utiliza **[Shadcn UI](https://ui.shadcn.com/)**, uma coleção de componentes reutilizáveis construídos com **Radix UI** e **Tailwind CSS**.
-
-**O que é Shadcn UI?**
-- Não é uma biblioteca NPM tradicional
-- Sistema de componentes "copy-paste" que você possui
-- Componentes totalmente customizáveis no seu código
-- Construído sobre Radix UI para acessibilidade
-- Estilizado com Tailwind CSS
-
-**Componentes Implementados** (14 no total):
-
-| Componente | Arquivo | Uso Principal |
-|------------|---------|---------------|
-| **Avatar** | `ui/avatar.tsx` | Foto do usuário no header |
-| **Badge** | `ui/badge.tsx` | Status de contas (Pendente, Pago, etc) |
-| **Button** | `ui/button.tsx` | Todos os botões da aplicação |
-| **Collapsible** | `ui/collapsible.tsx` | Seções expansíveis dos modais |
-| **Dialog** | `ui/dialog.tsx` | Base dos modais (Conta e Pagamento) |
-| **Dropdown Menu** | `ui/dropdown-menu.tsx` | Menus de ações e filtros |
-| **Input** | `ui/input.tsx` | Campos de texto e números |
-| **Label** | `ui/label.tsx` | Labels dos formulários |
-| **Select** | `ui/select.tsx` | Campos de seleção (dropdowns) |
-| **Separator** | `ui/separator.tsx` | Linhas divisórias |
-| **Table** | `ui/table.tsx` | Tabela principal de contas |
-| **Textarea** | `ui/textarea.tsx` | Campo de notas/observações |
-
-**Vantagens do Shadcn UI neste projeto**:
-- ✅ Componentes vivem no seu código (`src/components/ui/`)
-- ✅ Customização total sem limitações
-- ✅ Acessibilidade garantida pelo Radix UI
-- ✅ Consistência visual com Tailwind
-- ✅ TypeScript nativo
-- ✅ Dark mode funcionando perfeitamente
-- ✅ Sem bundle size extra de bibliotecas
-
-**Configuração**:
-O arquivo `components.json` define as configurações do Shadcn UI:
+**Resposta:**
 ```json
 {
-  "style": "default",
-  "rsc": true,
-  "tsx": true,
-  "tailwind": {
-    "config": "tailwind.config.js",
-    "css": "src/app/globals.css",
-    "baseColor": "zinc"
-  },
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils"
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 45,
+    "totalPages": 5
   }
 }
 ```
 
-**Como adicionar novos componentes Shadcn UI**:
-```bash
-# Exemplo: adicionar componente de Checkbox
-npx shadcn@latest add checkbox
+#### 2. **POST /api/contas**
+Cria nova conta a pagar.
 
-# Lista todos os componentes disponíveis
-npx shadcn@latest add
-```
-
-## 🎨 Contextos
-
-### LanguageContext
-
-Gerencia a internacionalização da aplicação.
-
-```typescript
-interface LanguageContextType {
-  language: 'pt' | 'en' | 'es';
-  setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+**Payload:**
+```json
+{
+  "conta": "000123",
+  "lancamento": "2025-01-15T00:00:00.000Z",
+  "credor": "Fornecedor ABC",
+  "devedor": "Empresa XYZ",
+  "competencia": "2025-01-15",
+  "vencimento": "2025-02-15",
+  "valor": 1000,
+  "desconto": 50,
+  "juros": 10,
+  "classificacaoGerencial": "Operacional"
 }
 ```
 
-**Idiomas Suportados**:
-- Português (pt) - padrão
-- Inglês (en)
-- Espanhol (es)
+#### 3. **GET /api/contas/[id]**
+Busca conta específica com pagamentos relacionados.
 
-**Uso**:
+#### 4. **PUT /api/contas/[id]**
+Atualiza dados da conta.
+
+#### 5. **DELETE /api/contas/[id]**
+Deleta conta e pagamentos em cascata.
+
+#### 6. **POST /api/contas/[id]/pagamentos**
+Cria pagamento e atualiza saldo da conta automaticamente.
+
+#### 7. **DELETE /api/pagamentos/[id]**
+Deleta pagamento e reverte valores da conta.
+
+#### 8. **GET /api/analytics**
+Retorna dados agregados para análise:
+- Total pendente e pago
+- Gastos por classificação
+- Contagem por status
+
+#### 9. **GET /api/export-data**
+Exporta todos os dados formatados para CSV.
+
+### Validação com Zod
+
+Todos os endpoints utilizam validação Zod server-side para garantir integridade dos dados:
+
 ```typescript
-const { t, language, setLanguage } = useLanguage();
-<h1>{t('bills.title')}</h1>
+// Exemplo: Criar Conta
+export const criarContaPagarSchema = z.object({
+  conta: z.string().min(1),
+  lancamento: z.string().datetime(),
+  credor: z.string().min(1),
+  devedor: z.string().min(1),
+  valor: z.number().positive(),
+  // ...
+});
 ```
 
-### ThemeContext
+---
 
-Gerencia o tema (light/dark) com View Transitions API.
+## 🎨 Frontend & Componentes
 
+### Componentes Principais
+
+#### 1. **Layout Principal**
+Define estrutura da aplicação com Sidebar e área de conteúdo.
+
+#### 2. **Página Principal (Home)**
+Componente que orquestra toda a interface:
+- Header com busca, tema, idioma
+- Toolbar com filtros e ações
+- Tabela com dados paginados
+- Modais de cadastro e edição
+
+#### 3. **AccountPayableModal**
+Modal completo com 4 abas:
+- Dados Gerais
+- Dados Financeiros
+- Pagamentos
+- Adicionais (arquivos e notas)
+
+**Funcionalidades:**
+- Edição inline
+- Validação client-side
+- Integração com API
+- Exclusão com confirmação
+
+#### 4. **AddPaymentModal**
+Modal para cadastro de novas contas:
+- Formulário completo
+- Sistema de parcelamento
+- Cálculo automático de totais
+- Validação de campos obrigatórios
+
+#### 5. **AnalyticsModal**
+Visualização de dados analíticos com gráficos.
+
+#### 6. **ExportButton**
+Exporta dados para CSV usando PapaParse:
+- Formatação em português
+- Encoding UTF-8 com BOM
+- Download automático
+
+#### 7. **DeleteConfirmationDialog**
+Dialog reutilizável para confirmação de exclusões.
+
+#### 8. **Sidebar**
+Navegação lateral com menu de opções.
+
+---
+
+## 🌐 Contextos & Estado Global
+
+### 1. **ThemeContext**
+Gerencia tema (light/dark) com persistência no localStorage.
+
+**Funcionalidades:**
+- Toggle de tema
+- Persistência de preferência
+- Classe CSS no `<html>`
+
+### 2. **LanguageContext**
+Internacionalização com suporte a PT/EN/ES.
+
+**Funcionalidades:**
+- Função `t()` para tradução
+- Mudança dinâmica de idioma
+- Traduções organizadas por chave
+
+### 3. **SidebarContext**
+Controla estado da sidebar (aberta/fechada).
+
+---
+
+## 🪝 Hooks Customizados
+
+### useBills
+
+Hook principal para gerenciar dados de contas:
+
+**Funcionalidades:**
+- Busca paginada de contas
+- Mapeamento ContaPagar → Bill
+- Estados de loading e erro
+- Função refetch para atualizar
+- Cálculo de dias para vencimento
+
+**Retorno:**
 ```typescript
-interface ThemeContextType {
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
-  mounted: boolean;
+{
+  bills: Bill[],
+  loading: boolean,
+  error: string | null,
+  pagination: {...},
+  refetch: () => Promise<void>
 }
 ```
 
-**Características**:
-- Persiste preferência no localStorage
-- Animação circular de transição
-- Suporte a SSR (hidratação sem flash)
+---
 
-**Uso**:
-```typescript
-const { theme, toggleTheme, mounted } = useTheme();
-<Button onClick={toggleTheme}>
-  {theme === 'light' ? <Sun /> : <Moon />}
-</Button>
-```
+## 🔤 Tipos TypeScript
 
-### SidebarContext
-
-Controla o estado de abertura/fechamento da sidebar.
+### Bill (Interface Principal)
 
 ```typescript
-interface SidebarContextType {
-  isCollapsed: boolean;
-  toggleSidebar: () => void;
-}
-```
-
-**Comportamento**:
-- Mobile: inicia fechada
-- Desktop: inicia aberta
-- Responsivo automático
-
-## 📐 Tipos e Interfaces
-
-### Bill
-
-Interface principal para contas a pagar/receber:
-
-```typescript
-interface Bill {
+export interface Bill {
   id: string;
   code: string;
   competenceDate: string;
@@ -492,7 +472,7 @@ interface Bill {
   paymentInfo: string;
   status: 'Pendente' | 'Pago' | 'Vencido' | 'Cancelado';
   classification: {
-    code: string;
+    code?: string;
     description: string;
   };
   participants: {
@@ -501,245 +481,216 @@ interface Bill {
   };
   installment: string;
   amount: number;
-  details?: {
-    document?: string;
-    invoice?: string;
-    accountGroup?: string;
-    reference?: string;
-    launchDate?: string;
-    paymentDate?: string;
-    creditor?: { id: string; name: string; };
-    debtor?: { id: string; name: string; };
-    accountingClassification?: { id: string; description: string; };
-    costCenter?: { id: string; name: string; };
-  };
+  details?: {...};
 }
 ```
-
-### BillFilters
-
-Interface para filtros aplicados:
-
-```typescript
-interface BillFilters {
-  search: string;
-  status: string;
-  dateRange: {
-    start: string;
-    end: string;
-  };
-}
-```
-
-## 🎨 Estilização
-
-### Design System
-
-O projeto utiliza um design system baseado em variáveis CSS customizáveis:
-
-**Cores (Light Mode)**:
-```css
---background: 250 250 250;     /* #fafafa */
---foreground: 10 10 10;         /* #0a0a0a */
---primary: 59 130 246;          /* blue-500 */
---destructive: 239 68 68;       /* red-500 */
---border: 228 228 231;          /* zinc-200 */
-```
-
-**Cores (Dark Mode)**:
-```css
---background: 23 23 23;         /* #171717 */
---foreground: 255 255 255;      /* #ffffff */
---primary: 59 130 246;          /* blue-500 */
---card: 22 22 22;               /* #161616 */
---border: 39 39 42;             /* zinc-800 */
-```
-
-### Customizações
-
-**Scrollbar Personalizada**:
-- Largura: 10px
-- Cor (light): zinc-300
-- Cor (dark): zinc-700
-- Border radius: 10px
-
-**View Transitions**:
-- Animação circular de 700ms
-- Easing: ease-in-out
-- Origem: botão de empresa
-
-**Rounded Corners**:
-- Default: 0.5rem
-- Small: 0.375rem
-- Large: 0.625rem
-- XL: 0.75rem
-
-## 🌍 Internacionalização
-
-### Estrutura de Traduções
-
-```typescript
-const translations = {
-  pt: {
-    'bills.title': 'Contas - A Pagar',
-    'bills.search': 'Buscar',
-    'bills.status': 'Status',
-    // ...
-  },
-  en: {
-    'bills.title': 'Bills - To Pay',
-    'bills.search': 'Search',
-    'bills.status': 'Status',
-    // ...
-  },
-  es: {
-    'bills.title': 'Cuentas - A Pagar',
-    'bills.search': 'Buscar',
-    'bills.status': 'Estado',
-    // ...
-  }
-};
-```
-
-### Adicionando Novas Traduções
-
-1. Abra `src/contexts/language-context.tsx`
-2. Adicione a chave nos três idiomas
-3. Use via hook: `t('chave.da.traducao')`
-
-## ✅ Boas Práticas
-
-### Código
-
-- ✅ **TypeScript Strict Mode**: Todas as tipagens validadas
-- ✅ **ESLint**: Zero erros e warnings
-- ✅ **Componentes Reutilizáveis**: Padrão shadcn/ui
-- ✅ **Hooks Personalizados**: Lógica encapsulada em contextos
-- ✅ **Estado Imutável**: Uso de `useState` e spreads
-- ✅ **Conditional Rendering**: Componentes otimizados
-
-### Performance
-
-- ⚡ **React Server Components**: Renderização no servidor
-- ⚡ **Code Splitting**: Imports dinâmicos onde necessário
-- ⚡ **Memoização**: Cálculos otimizados
-- ⚡ **Lazy Loading**: Modais carregados sob demanda
-
-### UX/UI
-
-- 🎨 **Feedback Visual**: Loading states e transições
-- 🎨 **Responsividade**: Mobile-first approach
-- 🎨 **Acessibilidade**: ARIA labels e navegação por teclado
-- 🎨 **Dark Mode**: Suporte completo com transições
-
-### Organização
-
-- 📁 **Estrutura Clara**: Separação por domínio
-- 📁 **Nomenclatura Consistente**: camelCase para funções, PascalCase para componentes
-- 📁 **Comentários Descritivos**: Código auto-documentado
-- 📁 **Git Commits Semânticos**: Conventional Commits
-
-## 🚢 Deploy
-
-### Vercel (Recomendado)
-
-1. Push do código para o GitHub
-2. Importe o projeto na [Vercel](https://vercel.com/new)
-3. Configure as variáveis de ambiente (se necessário)
-4. Deploy automático a cada push
-
-```bash
-npx vercel
-```
-
-### Build Manual
-
-```bash
-npm run build
-npm run start
-```
-
-O build otimizado estará em `.next/`
-
-### Variáveis de Ambiente
-
-Crie um arquivo `.env.local` na raiz (não commitar):
-
-```env
-# Exemplo de variáveis
-NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_ENV=production
-```
-
-## 👨‍💻 Desenvolvimento Local
-
-### Estrutura de Branches
-
-- `main`: Código de produção
-- `develop`: Desenvolvimento ativo
-- `feature/*`: Novas funcionalidades
-- `bugfix/*`: Correções de bugs
-
-### Workflow
-
-1. Clone o repositório
-2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
-3. Faça commits: `git commit -m 'feat: adiciona nova funcionalidade'`
-4. Push: `git push origin feature/nova-funcionalidade`
-5. Abra um Pull Request
-
-### Commits Semânticos
-
-```
-feat: Nova funcionalidade
-fix: Correção de bug
-docs: Documentação
-style: Formatação
-refactor: Refatoração de código
-test: Testes
-chore: Tarefas de manutenção
-```
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Por favor:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abra um Pull Request
-
-### Checklist de PR
-
-- [ ] Código segue os padrões do projeto
-- [ ] `npm run lint` passa sem erros
-- [ ] Código está tipado corretamente
-- [ ] Componentes são responsivos
-- [ ] Funciona em dark mode
-- [ ] Documentação atualizada (se necessário)
-
-## 📄 Licença
-
-Este projeto foi desenvolvido para o desafio da Pass e é de propriedade exclusiva da empresa.
-
-## 👤 Autor
-
-Desenvolvido com ❤️ por **Manuel Sereno**
-
-- Email: nelfsereno@gmail.com
-- GitHub: [@ManuelSereno](https://github.com/ManuelSereno)
-
-## 🙏 Agradecimentos
-
-- **Pass**: Pela oportunidade do desafio
-- **Vercel**: Pelo Next.js e Geist Font
-- **Radix UI**: Pelos componentes acessíveis
-- **Tailwind Labs**: Pelo Tailwind CSS
-- **Shadcn**: Pela biblioteca de componentes
 
 ---
 
-**Pass Finance** © 2025 - Sistema de Gestão Financeira
+## ✨ Funcionalidades Implementadas
 
-Desenvolvido para o Desafio Pass
+### Gestão de Contas
+- ✅ Listagem com paginação
+- ✅ Cadastro completo
+- ✅ Edição inline
+- ✅ Exclusão com confirmação
+- ✅ Filtros avançados
+- ✅ Busca por ID ou participante
+
+### Pagamentos
+- ✅ Registro de pagamentos
+- ✅ Atualização automática de saldo
+- ✅ Histórico de pagamentos
+- ✅ Exclusão com reversão
+
+### Parcelamento
+- ✅ Cadastro parcelado
+- ✅ Cálculo automático por parcela
+- ✅ Controle de parcelas
+
+### Análise
+- ✅ Dashboard com gráficos
+- ✅ Totais pendente e pago
+- ✅ Gastos por classificação
+- ✅ Contagem por status
+
+### Exportação
+- ✅ Export CSV
+- ✅ Formatação em português
+- ✅ UTF-8 com BOM (Excel)
+
+### Interface
+- ✅ Dark Mode
+- ✅ Internacionalização
+- ✅ Design responsivo
+- ✅ Loading states
+- ✅ Validação de formulários
+- ✅ Feedback visual
+
+---
+
+## 🔄 Fluxo de Dados
+
+### Fluxo de Listagem
+```
+Usuário → page.tsx → useBills → GET /api/contas 
+→ Prisma → PostgreSQL → Mapeia dados → Renderiza
+```
+
+### Fluxo de Criação
+```
+Usuário → AddPaymentModal → Validação Zod 
+→ POST /api/contas → Prisma INSERT → refetch()
+```
+
+### Fluxo de Edição
+```
+Usuário → Clica linha → AccountPayableModal 
+→ GET /api/contas/[id] → Edita → PUT /api/contas/[id]
+```
+
+### Fluxo de Pagamento
+```
+Usuário → Adicionar Pagamento → POST /api/contas/[id]/pagamentos
+→ Transação Prisma (INSERT + UPDATE) → Commit
+```
+
+---
+
+## 🎯 Boas Práticas
+
+### TypeScript
+- ✅ Tipagem estrita
+- ✅ Interfaces bem definidas
+- ✅ Enums para valores fixos
+- ✅ Type guards
+
+### React
+- ✅ Componentes funcionais com hooks
+- ✅ Custom hooks para lógica reutilizável
+- ✅ Context API para estado global
+- ✅ Memoização para otimização
+
+### Backend
+- ✅ API RESTful consistente
+- ✅ Validação com Zod
+- ✅ Tratamento de erros
+- ✅ Transações para operações críticas
+- ✅ Prisma Client singleton
+
+### Segurança
+- ✅ Validação server-side obrigatória
+- ✅ Sanitização de inputs
+- ✅ Variáveis de ambiente para secrets
+- ✅ Queries parametrizadas (Prisma)
+
+### Performance
+- ✅ Paginação no backend
+- ✅ Lazy loading de modais
+- ✅ Otimização de re-renders
+- ✅ Code splitting automático
+
+### Código Limpo
+- ✅ Nomes descritivos
+- ✅ Funções pequenas e focadas
+- ✅ Separação de responsabilidades
+- ✅ Formatação consistente
+
+---
+
+## ⚙️ Configuração e Deploy
+
+### Variáveis de Ambiente
+
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/passfinance"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
+```
+
+### Variável para viabilidade de Migrate
+```
+Postgres_URL_non_pooling = "postgresql://postgres:[Password]@db.plereohpxdjyneuxgcuz.supabase.co:5432/postgres"
+```
+### Variável para viabilidade de deploy via Vercel
+```
+DATABASE_URL = "postgresql://postgres.plereohpxdjyneuxgcuz:[Password]@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+```
+
+### Scripts
+
+```bash
+# Desenvolvimento
+npm run dev
+
+# Build
+npm run build
+npm run start
+
+# Banco de Dados
+npx prisma generate
+npx prisma migrate dev
+npx prisma migrate deploy
+npx prisma studio
+
+# Linting
+npm run lint
+```
+
+### Deploy (Vercel)
+
+1. Configurar variáveis de ambiente
+2. Build Command: `npm run build`
+3. Install Command: `npm install && npx prisma generate`
+4. Aplicar migrations: `npx prisma migrate deploy`
+
+**Bancos recomendados:** Neon, Supabase, Railway
+
+---
+
+## 📊 Métricas do Projeto
+
+- **Linhas de Código:** ~3.500
+- **Componentes React:** 15+
+- **API Endpoints:** 9
+- **Contextos:** 3
+- **Hooks Customizados:** 1
+- **Schemas Zod:** 2
+- **Modelos Prisma:** 2
+
+---
+
+## 🚀 Roadmap Futuro
+
+### Funcionalidades Planejadas
+- [ ] Autenticação de usuários
+- [ ] Permissões e roles
+- [ ] Contas a Receber
+- [ ] Relatórios em PDF
+- [ ] Anexos de arquivos
+- [ ] Notificações de vencimento
+- [ ] Dashboard interativo
+- [ ] Histórico de alterações
+- [ ] Importação de CSV/Excel
+- [ ] Integração bancária
+
+### Melhorias Técnicas
+- [ ] Testes unitários
+- [ ] Testes E2E
+- [ ] Storybook
+- [ ] CI/CD
+- [ ] Monitoring
+- [ ] Analytics
+- [ ] Rate limiting
+- [ ] Cache
+
+---
+
+## 📖 Conclusão
+
+O **Pass Finance** é um sistema completo, moderno e escalável para gestão financeira. A arquitetura bem definida, uso de tecnologias de ponta e boas práticas garantem um código de qualidade, fácil manutenção e pronto para evolução.
+
+A separação clara entre frontend e backend, o uso de TypeScript para segurança de tipos, a validação robusta com Zod e o ORM Prisma para acesso ao banco de dados criam uma base sólida para um sistema empresarial confiável.
+
+---
+
+**Desenvolvido com ❤️ por Manuel Sereno | © 2025 PASS**
