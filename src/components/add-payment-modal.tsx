@@ -191,7 +191,6 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      console.error('Erro ao cadastrar conta:', err);
     } finally {
       setIsSubmitting(false);
     }
