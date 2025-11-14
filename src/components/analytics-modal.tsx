@@ -356,7 +356,7 @@ export function AnalyticsModal({ open, onOpenChange, bills }: AnalyticsModalProp
                     return value;
                   }}
                 />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartLegend content={(props) => <ChartLegendContent {...props} />} />
                 <Line 
                   yAxisId="left"
                   type="monotone" 
