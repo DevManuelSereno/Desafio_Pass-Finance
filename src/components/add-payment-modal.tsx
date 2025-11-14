@@ -26,9 +26,6 @@ import {
 } from '@/components/ui/tabs';
 import {
   TooltipProvider,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -53,15 +50,45 @@ import {
 interface AddPaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
-  // Form state
+export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentModalProps) {
+  // Form state - campos obrigatórios
+  const [conta, setConta] = useState('');
+  const [lancamento, setLancamento] = useState(new Date().toISOString().split('T')[0]);
+  const [credor, setCredor] = useState('');
+  const [devedor, setDevedor] = useState('');
+  const [competencia, setCompetencia] = useState('');
+  const [vencimento, setVencimento] = useState('');
+  const [status, setStatus] = useState('PENDENTE');
+  
+  // Form state - campos opcionais
+  const [quitacao, setQuitacao] = useState('');
+  const [documentoContrato, setDocumentoContrato] = useState('');
+  const [fatura, setFatura] = useState('');
+  const [contaGrupo, setContaGrupo] = useState('');
+  const [referencia, setReferencia] = useState('');
+  const [palavrasChave, setPalavrasChave] = useState('');
+  const [classificacaoContabil, setClassificacaoContabil] = useState('');
+  const [classificacaoGerencial, setClassificacaoGerencial] = useState('');
+  const [centroCusto, setCentroCusto] = useState('');
+  const [vencimentoAlterado, setVencimentoAlterado] = useState('');
+  const [numeroParcela, setNumeroParcela] = useState(1);
+  const [previsao, setPrevisao] = useState('');
+  const [transacao, setTransacao] = useState('');
+  const [notas, setNotas] = useState('');
+  
+  // Form state - valores
   const [hasInstallments, setHasInstallments] = useState(false);
   const [numInstallments, setNumInstallments] = useState(1);
   const [totalValue, setTotalValue] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [interest, setInterest] = useState(0);
+  
+  // Loading and error states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Calculate final values
   const finalValue = totalValue - discount + interest;
@@ -72,6 +99,102 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  };
+
+  const resetForm = () => {
+    setConta('');
+    setLancamento(new Date().toISOString().split('T')[0]);
+    setCredor('');
+    setDevedor('');
+    setCompetencia('');
+    setVencimento('');
+    setStatus('PENDENTE');
+    setQuitacao('');
+    setDocumentoContrato('');
+    setFatura('');
+    setContaGrupo('');
+    setReferencia('');
+    setPalavrasChave('');
+    setClassificacaoContabil('');
+    setClassificacaoGerencial('');
+    setCentroCusto('');
+    setVencimentoAlterado('');
+    setNumeroParcela(1);
+    setNumInstallments(1);
+    setHasInstallments(false);
+    setPrevisao('');
+    setTransacao('');
+    setTotalValue(0);
+    setDiscount(0);
+    setInterest(0);
+    setNotas('');
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    setError(null);
+    
+    // Validação básica
+    if (!conta || !credor || !devedor || !competencia || !vencimento || totalValue <= 0) {
+      setError('Preencha todos os campos obrigatórios: Conta, Credor, Devedor, Competência, Vencimento e Valor');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const payload = {
+        conta,
+        lancamento: new Date(lancamento + 'T00:00:00').toISOString(),
+        quitacao: quitacao ? new Date(quitacao + 'T00:00:00').toISOString() : null,
+        status,
+        documentoContrato: documentoContrato || null,
+        fatura: fatura || null,
+        contaGrupo: contaGrupo || null,
+        referencia: referencia || null,
+        palavrasChave: palavrasChave ? palavrasChave.split(',').map(k => k.trim()) : [],
+        credor,
+        devedor,
+        classificacaoContabil: classificacaoContabil || null,
+        classificacaoGerencial: classificacaoGerencial || null,
+        centroCusto: centroCusto || null,
+        competencia,
+        vencimento,
+        vencimentoAlterado: vencimentoAlterado || null,
+        numeroParcela,
+        totalParcelas: numInstallments,
+        previsao: previsao || null,
+        transacao: transacao || null,
+        valor: totalValue,
+        desconto: discount,
+        juros: interest,
+      };
+      
+      const response = await fetch('/api/contas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao cadastrar conta');
+      }
+      
+      // Sucesso!
+      resetForm();
+      onOpenChange(false);
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      console.error('Erro ao cadastrar conta:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -157,52 +280,54 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Conta</Label>
+                      <Label className="text-xs text-muted-foreground">Conta *</Label>
                       <Input
                         placeholder="Código da conta"
                         className="h-9"
+                        value={conta}
+                        onChange={(e) => setConta(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Lançamento
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Lançamento</Label>
                       <Input
                         type="date"
                         className="h-9"
+                        value={lancamento}
+                        onChange={(e) => setLancamento(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Quitação
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Quitação</Label>
                       <Input
                         type="date"
                         placeholder="Indefinido"
                         className="h-9"
+                        value={quitacao}
+                        onChange={(e) => setQuitacao(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Status</Label>
-                      <Select defaultValue="Pendente">
+                      <Select value={status} onValueChange={setStatus}>
                         <SelectTrigger className="h-9 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Pendente">Pendente</SelectItem>
-                          <SelectItem value="Pago">Pago</SelectItem>
-                          <SelectItem value="Vencido">Vencido</SelectItem>
-                          <SelectItem value="Cancelado">Cancelado</SelectItem>
+                          <SelectItem value="PENDENTE">Pendente</SelectItem>
+                          <SelectItem value="PAGO">Pago</SelectItem>
+                          <SelectItem value="ATRASADO">Atrasado</SelectItem>
+                          <SelectItem value="CANCELADO">Cancelado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Documento/Contrato
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Documento/Contrato</Label>
                       <Input
                         placeholder="Indefinido"
                         className="h-9"
+                        value={documentoContrato}
+                        onChange={(e) => setDocumentoContrato(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -210,33 +335,35 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                       <Input
                         placeholder="Indefinido"
                         className="h-9"
+                        value={fatura}
+                        onChange={(e) => setFatura(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Conta/Grupo
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Conta/Grupo</Label>
                       <Input
                         placeholder="Selecionar..."
                         className="h-9"
+                        value={contaGrupo}
+                        onChange={(e) => setContaGrupo(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Referência
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Referência</Label>
                       <Input
                         placeholder="Referência"
                         className="h-9"
+                        value={referencia}
+                        onChange={(e) => setReferencia(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Palavra-chave
-                      </Label>
+                    <div className="space-y-2 md:col-span-2 lg:col-span-4">
+                      <Label className="text-xs text-muted-foreground">Palavra-chave</Label>
                       <Input
                         placeholder="Adicionar tags..."
                         className="h-9"
+                        value={palavrasChave}
+                        onChange={(e) => setPalavrasChave(e.target.value)}
                       />
                     </div>
                   </div>
@@ -249,35 +376,22 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Credor
-                      </Label>
-                      <Select>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue placeholder="Selecionar fornecedor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Injetec</SelectItem>
-                          <SelectItem value="2">Fornecedor ABC Ltda</SelectItem>
-                          <SelectItem value="3">Tech Solutions</SelectItem>
-                          <SelectItem value="4">Material de Escritório SA</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-xs text-muted-foreground">Credor *</Label>
+                      <Input
+                        placeholder="Nome do fornecedor"
+                        className="h-9"
+                        value={credor}
+                        onChange={(e) => setCredor(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Devedor
-                      </Label>
-                      <Select>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue placeholder="Selecionar devedor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Amorim Cortinas</SelectItem>
-                          <SelectItem value="2">Empresa Matriz</SelectItem>
-                          <SelectItem value="3">Filial São Paulo</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-xs text-muted-foreground">Devedor *</Label>
+                      <Input
+                        placeholder="Nome do devedor"
+                        className="h-9"
+                        value={devedor}
+                        onChange={(e) => setDevedor(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -295,50 +409,34 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                       <Label className="text-xs text-muted-foreground">
                         Classificação Contábil
                       </Label>
-                      <Select>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue placeholder="Selecionar..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">
-                            1.1.1.01.001 - Caixa Fundo Fixo
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        placeholder="Ex: 1.1.1.01.001"
+                        className="h-9"
+                        value={classificacaoContabil}
+                        onChange={(e) => setClassificacaoContabil(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Classificação Gerencial
                       </Label>
-                      <Select>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue placeholder="Selecionar..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">
-                            1.1.1.01.001 - Caixa Fundo Fixo
-                          </SelectItem>
-                          <SelectItem value="2">
-                            2.1.1.01.001 - Fornecedores
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        placeholder="Ex: Operacional"
+                        className="h-9"
+                        value={classificacaoGerencial}
+                        onChange={(e) => setClassificacaoGerencial(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Centro de Custo
                       </Label>
-                      <Select>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue placeholder="Selecionar..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Administrativo</SelectItem>
-                          <SelectItem value="2">Operacional</SelectItem>
-                          <SelectItem value="3">Comercial</SelectItem>
-                          <SelectItem value="4">Marketing</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        placeholder="Ex: Administrativo"
+                        className="h-9"
+                        value={centroCusto}
+                        onChange={(e) => setCentroCusto(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -351,20 +449,24 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
-                        Competência
+                        Competência *
                       </Label>
                       <Input
                         type="date"
                         className="h-9"
+                        value={competencia}
+                        onChange={(e) => setCompetencia(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
-                        Vencimento
+                        Vencimento *
                       </Label>
                       <Input
                         type="date"
                         className="h-9"
+                        value={vencimento}
+                        onChange={(e) => setVencimento(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -401,28 +503,21 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Previsão</Label>
-                      <Select defaultValue="nao">
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sim">Sim</SelectItem>
-                          <SelectItem value="nao">Não</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        placeholder="Previsão"
+                        className="h-9"
+                        value={previsao}
+                        onChange={(e) => setPrevisao(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Transação</Label>
-                      <Select defaultValue="indefinido">
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="indefinido">Indefinido</SelectItem>
-                          <SelectItem value="debito">Débito</SelectItem>
-                          <SelectItem value="credito">Crédito</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        placeholder="Transação"
+                        className="h-9"
+                        value={transacao}
+                        onChange={(e) => setTransacao(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
@@ -523,18 +618,34 @@ export function AddPaymentModal({ open, onOpenChange }: AddPaymentModalProps) {
                 <Textarea
                   placeholder="Adicionar anotações..."
                   className="min-h-[120px]"
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
                 />
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Error Message */}
+          {error && (
+            <div className="px-6 py-3 bg-destructive/10 border-t border-destructive/20">
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="sticky bottom-0 z-10 flex items-center justify-between px-6 py-4 border-t bg-background">
             <Button variant="ghost" className="cursor-pointer" onClick={() => onOpenChange(false)}>
               Fechar
             </Button>
-            <Button className="gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
-              Cadastrar
+            <Button 
+              className="gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

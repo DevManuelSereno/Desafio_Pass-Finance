@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StatusConta {
+  PENDENTE
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+model ContaPagar {
+  id                     Int           @id @default(autoincrement())
+  conta                  String        @unique
+  lancamento             DateTime
+  quitacao               DateTime?
+  status                 StatusConta   @default(PENDENTE)
+  documentoContrato      String?
+  fatura                 String?
+  contaGrupo             String?
+  referencia             String?
+  palavrasChave          String[]      @default([])
+  credor                 String
+  devedor                String
+  classificacaoContabil  String?
+  classificacaoGerencial String?
+  centroCusto            String?
+  competencia            DateTime      @db.Date
+  vencimento             DateTime      @db.Date
+  vencimentoAlterado     DateTime?     @db.Date
+  numeroParcela          Int           @default(1)
+  totalParcelas          Int           @default(1)
+  previsao               String?
+  transacao              String?
+  valor                  Decimal       @db.Decimal(10, 2)
+  desconto               Decimal       @default(0) @db.Decimal(10, 2)
+  juros                  Decimal       @default(0) @db.Decimal(10, 2)
+  total                  Decimal       @db.Decimal(10, 2)
+  valorPago              Decimal       @default(0) @db.Decimal(10, 2)
+  saldo                  Decimal       @db.Decimal(10, 2)
+  notas                  String?
+  arquivos               String[]      @default([])
+  criadoEm               DateTime      @default(now())
+  atualizadoEm           DateTime      @updatedAt
+
+  pagamentos             Pagamento[]
+}
+
+model Pagamento {
+  id            Int        @id @default(autoincrement())
+  chequeNumero  String?
+  caixa         String?
+  classificacao String?
+  tipo          String?
+  total         Decimal    @db.Decimal(10, 2)
+  dataPagamento DateTime   @default(now())
+
+  contaPagarId  Int
+  contaPagar    ContaPagar @relation(fields: [contaPagarId], references: [id], onDelete: Cascade)
+
+  @@index([contaPagarId])
+}

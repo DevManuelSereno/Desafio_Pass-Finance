@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, Fragment, useEffect } from 'react';
-import { mockBills } from '@/data/mock-bills';
 import { Bill } from '@/types/bill';
+import { useBills } from '@/hooks/use-bills';
 import { AccountPayableModal } from '@/components/account-payable-modal';
 import { AddPaymentModal } from '@/components/add-payment-modal';
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import { ExportButton } from '@/components/export-button';
 import {
   Table,
   TableBody,
@@ -16,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Download, Plus, Bot, BarChart3 } from 'lucide-react';
+import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Plus, Bot, BarChart3 } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -31,7 +33,6 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export default function Home() {
-  const [bills] = useState<Bill[]>(mockBills);
   const [searchTerm, setSearchTerm] = useState('');
   const [tableSearchTerm, setTableSearchTerm] = useState('');
   const [filterSearchTerm, setFilterSearchTerm] = useState('');
@@ -41,8 +42,12 @@ export default function Home() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showAITooltip, setShowAITooltip] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [billToDelete, setBillToDelete] = useState<Bill | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const { bills, loading, error, refetch } = useBills(currentPage, itemsPerPage);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [selectedSubFilters, setSelectedSubFilters] = useState<Record<string, string[]>>({
@@ -96,7 +101,7 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+  const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
   
   // Calcular os itens da página atual
@@ -197,6 +202,31 @@ export default function Home() {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  };
+
+  const handleDeleteBill = async () => {
+    if (!billToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/contas/${billToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir pagamento');
+      }
+
+      // Fechar o diálogo e atualizar a lista
+      setShowDeleteDialog(false);
+      setBillToDelete(null);
+      await refetch();
+    } catch (err) {
+      console.error('Erro ao excluir pagamento:', err);
+      alert('Erro ao excluir pagamento. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -514,14 +544,17 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg cursor-pointer">
-                  <RefreshCw className="h-3.5 w-3.5" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 gap-2 rounded-lg cursor-pointer"
+                  onClick={refetch}
+                  disabled={loading}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
                   <span className="text-xs">Atualizar</span>
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg cursor-pointer">
-                  <Download className="h-3.5 w-3.5" />
-                  <span className="text-xs">Export</span>
-                </Button>
+                <ExportButton />
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
                 <Button 
                   size="sm" 
@@ -566,7 +599,33 @@ export default function Home() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedBills.map((bill) => (
+            {loading && (
+              <TableRow>
+                <TableCell colSpan={11} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                  Carregando dados...
+                </TableCell>
+              </TableRow>
+            )}
+            {error && (
+              <TableRow>
+                <TableCell colSpan={11} className="h-24 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
+                    <Button size="sm" variant="outline" onClick={refetch}>
+                      Tentar novamente
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && !error && paginatedBills.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={11} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                  Nenhuma conta encontrada.
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && !error && paginatedBills.map((bill) => (
               <Fragment key={bill.id}>
                 <TableRow 
                   key={bill.id} 
@@ -596,7 +655,7 @@ export default function Home() {
                     <Badge
                       variant="secondary"
                     >
-                      {t('bills.pending')}
+                      {bill.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-3">
@@ -627,11 +686,24 @@ export default function Home() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedBill(bill);
+                            setShowAccountModal(true);
+                          }}
+                          className="cursor-pointer"
+                        >
                           <Edit className="mr-2 h-4 w-4" />
                           Editar pagamento
                         </DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive">
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => {
+                            setBillToDelete(bill);
+                            setShowDeleteDialog(true);
+                          }}
+                          className="cursor-pointer"
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Excluir pagamento
                         </DropdownMenuItem>
@@ -746,10 +818,20 @@ export default function Home() {
           setShowAccountModal(false);
           setShowPaymentModal(true);
         }}
+        onSuccess={refetch}
       />
       <AddPaymentModal
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
+        onSuccess={refetch}
+      />
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteBill}
+        isDeleting={isDeleting}
+        title="Excluir pagamento?"
+        description={`Tem certeza que deseja excluir o pagamento ${billToDelete?.id.padStart(6, '0')}? Esta ação não pode ser desfeita.`}
       />
     </div>
   );
