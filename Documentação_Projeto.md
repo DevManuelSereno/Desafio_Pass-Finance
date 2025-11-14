@@ -1,4 +1,145 @@
-# 📚 Documentação Técnica Completa - Pass Finance
+# Pass Finance 💰
+
+> Sistema moderno de gestão financeira desenvolvido com Next.js 16, React 19, TypeScript, Tailwind CSS e Shadcn/UI.
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.1-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.0-61dafb?style=flat&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+
+## 🚀 **Veja o projeto ao vivo:** [**https://desafio-pass-finance.vercel.app/**](https://desafio-pass-finance.vercel.app/)
+
+## 📋 Índice
+
+- [Visão Geral](#-visão-geral)
+- [Funcionalidades](#-funcionalidades)
+- [Tecnologias](#-tecnologias)
+- [Requisitos](#-requisitos)
+- [Instalação](#-instalação)
+- [Scripts Disponíveis](#-scripts-disponíveis)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Componentes Principais](#-componentes-principais)
+- [Contextos](#-contextos)
+- [Tipos e Interfaces](#-tipos-e-interfaces)
+- [Estilização](#-estilização)
+- [Internacionalização](#-internacionalização)
+- [Boas Práticas](#-boas-práticas)
+- [Deploy](#-deploy)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
+
+## 🎯 Visão Geral
+
+Pass Finance é um sistema completo de gestão financeira desenvolvido para o desafio da Pass. O projeto oferece uma interface moderna, intuitiva e responsiva para gerenciamento de contas a pagar e receber, com recursos avançados de filtragem, paginação e internacionalização.
+
+### Principais Destaques
+
+- 🎨 **Interface Moderna**: Design clean e profissional com suporte a Dark Mode
+- 🌍 **Multilíngue**: Suporte para Português, Inglês e Espanhol
+- 📱 **100% Responsivo**: Experiência perfeita em desktop, tablet e mobile
+- ⚡ **Performance Otimizada**: Next.js 16 com React Server Components
+- 🎭 **Animações Fluidas**: View Transitions API para transições suaves
+- 🔍 **Filtros Avançados**: Sistema completo de busca e filtros hierárquicos
+- 📊 **Tabela Dinâmica**: Paginação, seleção múltipla e ordenação
+- 💳 **Modais Completos**: Cadastro e edição de pagamentos com validação
+- 🧩 **Shadcn UI**: Componentes reutilizáveis e acessíveis com Radix UI
+
+## ✨ Funcionalidades
+
+### Dashboard Principal
+
+- **Listagem de Contas**: Visualização completa de contas a pagar/receber
+- **Busca Avançada**: Pesquisa por ID ou nome do participante
+- **Filtros Hierárquicos**: 
+  - Por quitação (status de pagamento)
+  - Por status (Pendente, Pago, Vencido, Cancelado)
+  - Por classificação contábil
+- **Paginação Customizável**: 5, 10, 15 ou 20 itens por página
+- **Seleção Múltipla**: Ações em lote para múltiplas contas
+- **Ações por Item**: Editar, excluir e visualizar detalhes
+
+### Modal de Conta a Pagar
+
+Visualização e edição completa com as seguintes seções colapsáveis:
+
+#### 📋 Dados Gerais
+- Conta, Lançamento, Quitação, Status
+- Documento/Contrato, Fatura
+- Conta/Grupo, Referência
+- Palavras-chave
+
+#### 👥 Participantes
+- Credor (quem recebe)
+- Devedor (quem paga)
+
+#### 📊 Contábil
+- Classificação Contábil
+- Classificação Gerencial
+- Centro de Custo
+
+#### 💰 Dados Financeiros
+- Competência, Vencimento
+- Número de Parcelas
+- Previsão, Transação
+
+#### 🧾 Totais
+- Valor, Desconto, Juros
+- Total, Valor Pago, Saldo
+- Destaque visual para saldos negativos
+
+#### 💳 Pagamentos
+- Tabela de pagamentos realizados
+- Botão para adicionar novo pagamento
+
+#### 📁 Arquivos
+- Upload de anexos (drag-and-drop)
+- Suporte para PDF, TXT, XML
+
+#### 📝 Notas
+- Campo de texto livre para anotações
+
+### Modal de Adicionar Pagamento
+
+Sistema completo de cadastro com:
+
+#### 📋 Dados Gerais
+- Tipo de Operação (Pagar/Receber)
+- Data de Vencimento e Competência
+- Caixa/Conta, Forma de Pagamento
+- Classificação Gerencial
+- Descrição/Histórico
+
+#### 👥 Participantes
+- Credor e Devedor
+- Dicas contextuais
+
+#### 💳 Dados Financeiros
+- **Parcelamento Inteligente**:
+  - Configuração de número de parcelas (1-360)
+  - Periodicidade (Semanal, Quinzenal, Mensal, etc.)
+  - Data da primeira parcela
+  - Preview em tempo real do parcelamento
+- Centro de Custo
+- Projeto/Departamento
+
+#### 💰 Valores
+- Valor Principal (obrigatório)
+- Desconto
+- Juros/Multa
+- **Resumo Visual**:
+  - Cálculo automático do total
+  - Valor por parcela (se parcelado)
+  - Cores semânticas (verde para desconto, vermelho para juros)
+
+#### 📁 Arquivos
+- Upload de comprovantes
+
+#### 📝 Notas
+- Campo para observações
+
+## 🛠 Tecnologias
+
+### Core
 
 > Sistema moderno de gestão financeira desenvolvido com Next.js 16, React 19, TypeScript, Tailwind CSS, Prisma ORM e PostgreSQL.
 
