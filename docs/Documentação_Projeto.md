@@ -468,11 +468,11 @@ NEXT_PUBLIC_API_URL="http://localhost:3000"
 
 ### Variável para viabilidade de Migrate
 ```
-Postgres_URL_non_pooling = "postgresql://postgres:NovaSenhaDB@db.plereohpxdjyneuxgcuz.supabase.co:5432/postgres"
+Postgres_URL_non_pooling = "postgresql://postgres:[Password]@db.plereohpxdjyneuxgcuz.supabase.co:5432/postgres"
 ```
 ### Variável para viabilidade de deploy via Vercel
 ```
-DATABASE_URL = "postgresql://postgres.plereohpxdjyneuxgcuz:NovaSenhaDB@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DATABASE_URL = "postgresql://postgres.plereohpxdjyneuxgcuz:[Password]@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
 ```
 
 ### Scripts
