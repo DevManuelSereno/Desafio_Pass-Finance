@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TagInput } from '@/components/ui/tag-input';
 import {
   Select,
   SelectContent,
@@ -69,7 +71,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
   const [fatura, setFatura] = useState('');
   const [contaGrupo, setContaGrupo] = useState('');
   const [referencia, setReferencia] = useState('');
-  const [palavrasChave, setPalavrasChave] = useState('');
+  const [palavrasChave, setPalavrasChave] = useState<string[]>([]);
   const [classificacaoContabil, setClassificacaoContabil] = useState('');
   const [classificacaoGerencial, setClassificacaoGerencial] = useState('');
   const [centroCusto, setCentroCusto] = useState('');
@@ -114,7 +116,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
     setFatura('');
     setContaGrupo('');
     setReferencia('');
-    setPalavrasChave('');
+    setPalavrasChave([]);
     setClassificacaoContabil('');
     setClassificacaoGerencial('');
     setCentroCusto('');
@@ -152,7 +154,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
         fatura: fatura || null,
         contaGrupo: contaGrupo || null,
         referencia: referencia || null,
-        palavrasChave: palavrasChave ? palavrasChave.split(',').map(k => k.trim()) : [],
+        palavrasChave: palavrasChave,
         credor,
         devedor,
         classificacaoContabil: classificacaoContabil || null,
@@ -277,7 +279,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
                   Dados Gerais
                 </h3>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Conta *</Label>
                       <Input
@@ -285,25 +287,6 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
                         className="h-9"
                         value={conta}
                         onChange={(e) => setConta(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Lançamento</Label>
-                      <Input
-                        type="date"
-                        className="h-9"
-                        value={lancamento}
-                        onChange={(e) => setLancamento(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Quitação</Label>
-                      <Input
-                        type="date"
-                        placeholder="Indefinido"
-                        className="h-9"
-                        value={quitacao}
-                        onChange={(e) => setQuitacao(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -319,6 +302,22 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
                           <SelectItem value="CANCELADO">Cancelado</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Lançamento</Label>
+                      <DatePicker
+                        value={lancamento}
+                        onChange={setLancamento}
+                        placeholder="Selecionar data"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Quitação</Label>
+                      <DatePicker
+                        value={quitacao}
+                        onChange={setQuitacao}
+                        placeholder="Indefinido"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Documento/Contrato</Label>
@@ -356,13 +355,12 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
                         onChange={(e) => setReferencia(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2 md:col-span-2 lg:col-span-4">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-xs text-muted-foreground">Palavra-chave</Label>
-                      <Input
-                        placeholder="Adicionar tags..."
-                        className="h-9"
+                      <TagInput
                         value={palavrasChave}
-                        onChange={(e) => setPalavrasChave(e.target.value)}
+                        onChange={setPalavrasChave}
+                        placeholder="Adicionar tags..."
                       />
                     </div>
                   </div>
@@ -445,34 +443,36 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">Dados Financeiros</h3>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Competência *
                       </Label>
-                      <Input
-                        type="date"
-                        className="h-9"
+                      <DatePicker
                         value={competencia}
-                        onChange={(e) => setCompetencia(e.target.value)}
+                        onChange={setCompetencia}
+                        placeholder="Selecionar data"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Vencimento *
                       </Label>
-                      <Input
-                        type="date"
-                        className="h-9"
+                      <DatePicker
                         value={vencimento}
-                        onChange={(e) => setVencimento(e.target.value)}
+                        onChange={setVencimento}
+                        placeholder="Selecionar data"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Vencimento Alterado
                       </Label>
-                      <Input type="date" placeholder="Indefinido" className="h-9" />
+                      <DatePicker
+                        value={vencimentoAlterado}
+                        onChange={setVencimentoAlterado}
+                        placeholder="Indefinido"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
@@ -480,7 +480,8 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
                       </Label>
                       <Input
                         type="number"
-                        defaultValue="1"
+                        value={numeroParcela}
+                        onChange={(e) => setNumeroParcela(parseInt(e.target.value) || 1)}
                         placeholder="1"
                         className="h-9"
                       />
@@ -526,7 +527,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">Valores</h3>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">Valor</Label>
                       <Input

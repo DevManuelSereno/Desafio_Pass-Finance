@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TagInput } from '@/components/ui/tag-input';
 import {
   TooltipProvider,
 } from '@/components/ui/tooltip';
@@ -84,7 +86,7 @@ export function AccountPayableModal({
   const [fatura, setFatura] = useState('');
   const [contaGrupo, setContaGrupo] = useState('');
   const [referencia, setReferencia] = useState('');
-  const [palavrasChave, setPalavrasChave] = useState('');
+  const [palavrasChave, setPalavrasChave] = useState<string[]>([]);
   const [classificacaoContabil, setClassificacaoContabil] = useState('');
   const [classificacaoGerencial, setClassificacaoGerencial] = useState('');
   const [centroCusto, setCentroCusto] = useState('');
@@ -114,7 +116,7 @@ export function AccountPayableModal({
       setFatura(bill.details?.invoice || '');
       setContaGrupo(bill.details?.accountGroup || '');
       setReferencia(bill.details?.reference || '');
-      setPalavrasChave('');
+      setPalavrasChave([]);
       setClassificacaoContabil(bill.classification?.code || '');
       setClassificacaoGerencial(bill.classification?.description || '');
       setCentroCusto(bill.details?.costCenter?.name || '');
@@ -165,7 +167,7 @@ export function AccountPayableModal({
         fatura: fatura || null,
         contaGrupo: contaGrupo || null,
         referencia: referencia || null,
-        palavrasChave: palavrasChave ? palavrasChave.split(',').map(k => k.trim()) : [],
+        palavrasChave: palavrasChave,
         classificacaoContabil: classificacaoContabil || null,
         classificacaoGerencial: classificacaoGerencial || null,
         centroCusto: centroCusto || null,
@@ -341,34 +343,12 @@ export function AccountPayableModal({
                 Dados Gerais
               </h3>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Conta</Label>
                     <Input
                       value={bill.code.split('\n')[0]}
                       readOnly
-                      className="h-9"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">
-                      Lançamento
-                    </Label>
-                    <Input
-                      value={bill.details?.launchDate || ''}
-                      readOnly
-                      className="h-9"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">
-                      Quitação
-                    </Label>
-                    <Input
-                      type="date"
-                      value={quitacao}
-                      onChange={(e) => { setQuitacao(e.target.value); setIsEditing(true); }}
-                      placeholder="Indefinido"
                       className="h-9"
                     />
                   </div>
@@ -385,6 +365,26 @@ export function AccountPayableModal({
                         <SelectItem value="CANCELADO">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Lançamento
+                    </Label>
+                    <Input
+                      value={bill.details?.launchDate || ''}
+                      readOnly
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Quitação
+                    </Label>
+                    <DatePicker
+                      value={quitacao}
+                      onChange={(value) => { setQuitacao(value); setIsEditing(true); }}
+                      placeholder="Indefinido"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -428,11 +428,10 @@ export function AccountPayableModal({
                     <Label className="text-xs text-muted-foreground">
                       Palavra-chave
                     </Label>
-                    <Input
+                    <TagInput
                       value={palavrasChave}
-                      onChange={(e) => { setPalavrasChave(e.target.value); setIsEditing(true); }}
+                      onChange={(value) => { setPalavrasChave(value); setIsEditing(true); }}
                       placeholder="Adicionar tags..."
-                      className="h-9"
                     />
                   </div>
                 </div>
@@ -519,34 +518,30 @@ export function AccountPayableModal({
                     <Label className="text-xs text-muted-foreground">
                       Competência
                     </Label>
-                    <Input
-                      type="date"
+                    <DatePicker
                       value={competencia}
-                      onChange={(e) => { setCompetencia(e.target.value); setIsEditing(true); }}
-                      className="h-9"
+                      onChange={(value) => { setCompetencia(value); setIsEditing(true); }}
+                      placeholder="dd/mm/aaaa"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Vencimento
                     </Label>
-                    <Input
-                      type="date"
+                    <DatePicker
                       value={vencimento}
-                      onChange={(e) => { setVencimento(e.target.value); setIsEditing(true); }}
-                      className="h-9"
+                      onChange={(value) => { setVencimento(value); setIsEditing(true); }}
+                      placeholder="dd/mm/aaaa"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Vencimento Alterado
                     </Label>
-                    <Input 
-                      type="date" 
+                    <DatePicker
                       value={vencimentoAlterado}
-                      onChange={(e) => { setVencimentoAlterado(e.target.value); setIsEditing(true); }}
-                      placeholder="Indefinido" 
-                      className="h-9" 
+                      onChange={(value) => { setVencimentoAlterado(value); setIsEditing(true); }}
+                      placeholder="Indefinido"
                     />
                   </div>
                   <div className="space-y-2">

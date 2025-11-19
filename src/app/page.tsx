@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Bill } from '@/types/bill';
 import { useBills } from '@/hooks/use-bills';
 import { AccountPayableModal } from '@/components/account-payable-modal';
@@ -19,7 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutPanelLeft, ListFilter, Settings, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Plus, Bot, BarChart3 } from 'lucide-react';
+import { Search, ListFilter, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Plus, Bot, BarChart3, Settings } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -36,8 +36,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableSearchTerm, setTableSearchTerm] = useState('');
-  const [filterSearchTerm, setFilterSearchTerm] = useState('');
-  const [subFilterSearchTerm, setSubFilterSearchTerm] = useState('');
+  const [statusFilterSearch, setStatusFilterSearch] = useState('');
+  const [classificationFilterSearch, setClassificationFilterSearch] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -138,41 +138,6 @@ export default function Home() {
     acc[classification] = (acc[classification] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  
-  // Filtros principais
-  const filterOptions = [
-    { id: 'payment', label: 'Quitação' },
-    { id: 'status', label: 'Status' },
-    { id: 'classification', label: 'Classificação' },
-  ].filter(option => 
-    option.label.toLowerCase().includes(filterSearchTerm.toLowerCase())
-  );
-  
-  // Sub-opções de filtros
-  const getSubFilterOptions = (category: string) => {
-    let options: { value: string; count: number }[] = [];
-    
-    if (category === 'payment') {
-      options = Object.entries(paymentCounts).map(([key, count]) => ({
-        value: key,
-        count
-      }));
-    } else if (category === 'status') {
-      options = Object.entries(statusCounts).map(([key, count]) => ({
-        value: key,
-        count
-      }));
-    } else if (category === 'classification') {
-      options = Object.entries(classificationCounts).map(([key, count]) => ({
-        value: key,
-        count
-      }));
-    }
-    
-    return options.filter(option =>
-      option.value.toLowerCase().includes(subFilterSearchTerm.toLowerCase())
-    );
-  };
   
   const handleSelectItem = (id: string) => {
     setSelectedItems(prev => 
@@ -374,13 +339,92 @@ export default function Home() {
         )}
       </header>
 
-      {/* Table */}
+      {/* Conteúdo Principal */}
       <div className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-3 md:py-4 scrollbar-hide">
+        {/* Cards de Indicadores */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+          <div className="rounded-xl bg-white dark:bg-[#161616] p-4 sm:p-5 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Total</p>
+                <p className="text-lg sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</p>
+                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-500 mt-1">{bills.length} contas</p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-zinc-600 dark:text-zinc-400">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          <div className="rounded-xl bg-white dark:bg-[#161616] p-4 sm:p-5 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Pendente</p>
+                <p className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-500">
+                  {formatCurrency(bills.filter(b => b.status === 'Pendente').reduce((sum, bill) => sum + bill.amount, 0))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-500 mt-1">{bills.filter(b => b.status === 'Pendente').length} contas</p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-orange-100 dark:bg-orange-950/50 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-orange-600 dark:text-orange-500">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-white dark:bg-[#161616] p-4 sm:p-5 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Pago</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-500">
+                  {formatCurrency(bills.filter(b => b.status === 'Pago').reduce((sum, bill) => sum + bill.amount, 0))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-500 mt-1">{bills.filter(b => b.status === 'Pago').length} contas</p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-green-600 dark:text-green-500">
+                  <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-white dark:bg-[#161616] p-4 sm:p-5 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Vencido</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-500">
+                  {formatCurrency(bills.filter(b => b.status === 'Vencido').reduce((sum, bill) => sum + bill.amount, 0))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-500 mt-1">{bills.filter(b => b.status === 'Vencido').length} contas</p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-red-600 dark:text-red-500">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 9v4M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabela */}
         <div className="overflow-hidden rounded-xl md:rounded-2xl border border-zinc-200 dark:border-zinc-800">
           {/* Toolbar */}
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
+                <Button 
+                  size="sm" 
+                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                  onClick={() => setShowAnalyticsModal(true)}
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                </Button>
                 {/* AI Assistant Button */}
                 <div className="relative">
                   <Button
@@ -425,114 +469,6 @@ export default function Home() {
                   )}
                 </div>
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hidden md:flex cursor-pointer">
-                  <LayoutPanelLeft size={16}/>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
-                      <ListFilter size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="start" 
-                    className="w-56 rounded-xl p-2"
-                  >
-                    <div className="px-2 pb-2">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
-                        <Input
-                          type="text"
-                          placeholder="Filtrar modo..."
-                          className="h-8 pl-7 pr-2 text-xs rounded-lg"
-                          value={filterSearchTerm}
-                          onChange={(e) => setFilterSearchTerm(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <div className="max-h-64 overflow-y-auto">
-                      {filterOptions.map((option) => (
-                        <DropdownMenu key={option.id}>
-                          <DropdownMenuTrigger asChild>
-                            <div
-                              className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm"
-                              onMouseEnter={() => {
-                                setSubFilterSearchTerm('');
-                              }}
-                            >
-                              <span>{option.label}</span>
-                              <ChevronDown className="h-4 w-4 -rotate-90" />
-                            </div>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent 
-                            side={isSmallScreen ? "bottom" : "right"}
-                            align={isSmallScreen ? "start" : "start"}
-                            sideOffset={isSmallScreen ? 8 : 5}
-                            alignOffset={isSmallScreen ? 0 : -10}
-                            className="w-64 rounded-xl p-2"
-                            data-submenu
-                            collisionPadding={10}
-                            avoidCollisions={true}
-                          >
-                            <div className="px-2 pb-2">
-                              <div className="relative">
-                                <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
-                                <Input
-                                  type="text"
-                                  placeholder="Buscar..."
-                                  className="h-8 pl-7 pr-2 text-xs rounded-lg"
-                                  value={subFilterSearchTerm}
-                                  onChange={(e) => setSubFilterSearchTerm(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              </div>
-                            </div>
-                            <DropdownMenuSeparator />
-                            <div className="max-h-64 overflow-y-auto">
-                              {getSubFilterOptions(option.id).map((subOption) => (
-                                <div
-                                  key={subOption.value}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleSubFilter(option.id, subOption.value);
-                                  }}
-                                  className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                >
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedSubFilters[option.id]?.includes(subOption.value) || false}
-                                      onChange={() => {}}
-                                      className="h-4 w-4 rounded-[5px] cursor-pointer bg-white dark:bg-black border border-zinc-400/30 dark:border-zinc-500/30 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white appearance-none checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] dark:checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy5MTEgMSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')] bg-center bg-no-repeat flex-shrink-0"
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <span className="text-sm truncate">{subOption.value}</span>
-                                  </div>
-                                  <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{subOption.count}</span>
-                                </div>
-                              ))}
-                              {getSubFilterOptions(option.id).length === 0 && (
-                                <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                                  Nenhuma opção encontrada
-                                </div>
-                              )}
-                            </div>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ))}
-                      {filterOptions.length === 0 && (
-                        <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                          Nenhum filtro encontrado
-                        </div>
-                      )}
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg cursor-pointer">
-                  <Settings size={16} />
-                </Button>
                 <div className="relative hidden lg:flex items-center flex-1 max-w-xs">
                   <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-400" />
                   <Input
@@ -543,6 +479,152 @@ export default function Home() {
                     onChange={(e) => setTableSearchTerm(e.target.value)}
                   />
                 </div>
+                
+                {/* Filtro de Status */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
+                    >
+                      <ListFilter className="h-3.5 w-3.5" />
+                      <span className="text-xs font-medium">Status</span>
+                      {selectedSubFilters.status.length > 0 && (
+                        <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
+                          {selectedSubFilters.status.length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="start" 
+                    className="w-64 rounded-xl p-2"
+                  >
+                    <div className="px-2 pb-2">
+                      <div className="relative">
+                        <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
+                        <Input
+                          type="text"
+                          placeholder="Filtrar status..."
+                          className="h-8 pl-7 pr-2 text-xs rounded-lg"
+                          value={statusFilterSearch}
+                          onChange={(e) => setStatusFilterSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <div className="max-h-64 overflow-y-auto">
+                      {Object.entries(statusCounts)
+                        .filter(([status]) => 
+                          status.toLowerCase().includes(statusFilterSearch.toLowerCase())
+                        )
+                        .map(([status, count]) => (
+                          <div
+                            key={status}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSubFilter('status', status);
+                            }}
+                            className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedSubFilters.status?.includes(status) || false}
+                                onChange={() => {}}
+                                className="h-4 w-4 rounded-[5px] cursor-pointer bg-white dark:bg-black border border-zinc-400/30 dark:border-zinc-500/30 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white appearance-none checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] dark:checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] bg-center bg-no-repeat flex-shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-sm truncate">{status}</span>
+                            </div>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{count}</span>
+                          </div>
+                        ))}
+                      {Object.entries(statusCounts).filter(([status]) => 
+                        status.toLowerCase().includes(statusFilterSearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                          Nenhum status encontrado
+                        </div>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Filtro de Classificação */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
+                    >
+                      <ListFilter className="h-3.5 w-3.5" />
+                      <span className="text-xs font-medium">Classificação</span>
+                      {selectedSubFilters.classification.length > 0 && (
+                        <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
+                          {selectedSubFilters.classification.length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="start" 
+                    className="w-64 rounded-xl p-2"
+                  >
+                    <div className="px-2 pb-2">
+                      <div className="relative">
+                        <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-zinc-400" />
+                        <Input
+                          type="text"
+                          placeholder="Filtrar classificação..."
+                          className="h-8 pl-7 pr-2 text-xs rounded-lg"
+                          value={classificationFilterSearch}
+                          onChange={(e) => setClassificationFilterSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <div className="max-h-64 overflow-y-auto">
+                      {Object.entries(classificationCounts)
+                        .filter(([classification]) => 
+                          classification.toLowerCase().includes(classificationFilterSearch.toLowerCase())
+                        )
+                        .map(([classification, count]) => (
+                          <div
+                            key={classification}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSubFilter('classification', classification);
+                            }}
+                            className="flex items-center justify-between py-2 px-2 cursor-pointer rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedSubFilters.classification?.includes(classification) || false}
+                                onChange={() => {}}
+                                className="h-4 w-4 rounded-[5px] cursor-pointer bg-white dark:bg-black border border-zinc-400/30 dark:border-zinc-500/30 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white appearance-none checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] dark:checked:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')] bg-center bg-no-repeat flex-shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-sm truncate">{classification}</span>
+                            </div>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{count}</span>
+                          </div>
+                        ))}
+                      {Object.entries(classificationCounts).filter(([classification]) => 
+                        classification.toLowerCase().includes(classificationFilterSearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                          Nenhuma classificação encontrada
+                        </div>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
@@ -557,14 +639,7 @@ export default function Home() {
                 </Button>
                 <ExportButton />
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
-                <Button 
-                  size="sm" 
-                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
-                  onClick={() => setShowAnalyticsModal(true)}
-                >
-                  <BarChart3 className="h-3.5 w-3.5" />
-                  <span className="text-xs">Análise</span>
-                </Button>
+
                 <Button 
                   size="sm" 
                   className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
@@ -718,16 +793,6 @@ export default function Home() {
           </TableBody>
         </Table>
         </div>
-        
-          {/* Total above footer */}
-          <div className="border-t border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-2 dark:border-zinc-800 dark:bg-[#161616]">
-            <div className="flex justify-end">
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
-                <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
-              </div>
-            </div>
-          </div>
         
           {/* Footer */}
           <div className="border-t border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">

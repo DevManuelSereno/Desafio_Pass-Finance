@@ -18,7 +18,6 @@ import {
   WalletMinimal,
   CalendarDays,
   Puzzle,
-  Target,
   FileText,
   Settings,
   ChevronsUpDown,
@@ -108,7 +107,6 @@ const getIcon = (iconName: string) => {
     WalletMinimal: <WalletMinimal size={18} />,
     CalendarDays: <CalendarDays size={18} />,
     Puzzle: <Puzzle size={18} />,
-    Target: <Target size={18} />,
     FileText: <FileText size={18} />,
     Settings: <Settings size={18} />,
   };
