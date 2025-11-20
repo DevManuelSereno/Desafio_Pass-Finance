@@ -239,16 +239,18 @@ export function AccountPayableModal({
     }
   };
 
-  const getStatusVariant = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pago':
-        return 'default';
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
       case 'Pendente':
-        return 'secondary';
+        return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
       case 'Vencido':
-        return 'destructive';
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'Cancelado':
+        return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
       default:
-        return 'outline';
+        return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
     }
   };
 
@@ -269,7 +271,7 @@ export function AccountPayableModal({
                   <DialogTitle className="text-lg font-semibold">
                     Conta a Pagar
                   </DialogTitle>
-                  <Badge variant={getStatusVariant(bill.status)}>
+                  <Badge className={`${getStatusColor(bill.status)} border-0 font-medium`}>
                     {bill.status}
                   </Badge>
                 </div>
