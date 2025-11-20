@@ -21,12 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
   TooltipProvider,
 } from '@/components/ui/tooltip';
 import {
@@ -36,13 +30,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Info,
   ChevronRight,
   X,
-  DollarSign,
   AlertCircle,
   Upload,
-  FileText,
   Banknote,
   MoreHorizontal,
   Pencil,
@@ -203,7 +194,7 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-5xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="sticky top-0 z-10 flex items-start justify-between px-6 py-6 bg-background">
+          <div className="sticky top-0 z-10 flex items-start justify-between px-6 py-6 bg-background border-b border-border">
             <div className="flex items-start gap-4 flex-1">
               <div className="h-12 w-12 rounded-full bg-background border flex items-center justify-center flex-shrink-0">
                 <Banknote className="h-5 w-5 text-foreground" />
@@ -253,377 +244,232 @@ export function AddPaymentModal({ open, onOpenChange, onSuccess }: AddPaymentMod
             </div>
           </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="dados-gerais" className="flex-1 flex flex-col">
-            <TabsList className="px-6 justify-start">
-              <TabsTrigger value="dados-gerais" className="gap-2 cursor-pointer">
-                <Info className="h-4 w-4" />
-                Dados Gerais
-              </TabsTrigger>
-              <TabsTrigger value="dados-financeiros" className="gap-2 cursor-pointer">
-                <DollarSign className="h-4 w-4" />
-                Dados Financeiros
-              </TabsTrigger>
-              <TabsTrigger value="adicionais" className="gap-2 cursor-pointer">
-                <FileText className="h-4 w-4" />
-                Adicionais
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Dados Gerais Tab */}
-            <TabsContent value="dados-gerais" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
-              {/* Informações Gerais */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                  Dados Gerais
-                </h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Conta *</Label>
-                      <Input
-                        placeholder="Código da conta"
-                        className="h-9"
-                        value={conta}
-                        onChange={(e) => setConta(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Status</Label>
-                      <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="h-9 cursor-pointer">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PENDENTE">Pendente</SelectItem>
-                          <SelectItem value="PAGO">Pago</SelectItem>
-                          <SelectItem value="ATRASADO">Atrasado</SelectItem>
-                          <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Lançamento</Label>
-                      <DatePicker
-                        value={lancamento}
-                        onChange={setLancamento}
-                        placeholder="Selecionar data"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Quitação</Label>
-                      <DatePicker
-                        value={quitacao}
-                        onChange={setQuitacao}
-                        placeholder="Indefinido"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Documento/Contrato</Label>
-                      <Input
-                        placeholder="Indefinido"
-                        className="h-9"
-                        value={documentoContrato}
-                        onChange={(e) => setDocumentoContrato(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Fatura</Label>
-                      <Input
-                        placeholder="Indefinido"
-                        className="h-9"
-                        value={fatura}
-                        onChange={(e) => setFatura(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Conta/Grupo</Label>
-                      <Input
-                        placeholder="Selecionar..."
-                        className="h-9"
-                        value={contaGrupo}
-                        onChange={(e) => setContaGrupo(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Referência</Label>
-                      <Input
-                        placeholder="Referência"
-                        className="h-9"
-                        value={referencia}
-                        onChange={(e) => setReferencia(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label className="text-xs text-muted-foreground">Palavra-chave</Label>
-                      <TagInput
-                        value={palavrasChave}
-                        onChange={setPalavrasChave}
-                        placeholder="Adicionar tags..."
-                      />
-                    </div>
-                  </div>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
+            {/* Informações Básicas */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold">Dados Gerais</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Conta *</Label>
+                  <Input
+                    placeholder="Código da conta"
+                    className="h-9"
+                    value={conta}
+                    onChange={(e) => setConta(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger className="h-9 cursor-pointer">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDENTE">Pendente</SelectItem>
+                      <SelectItem value="PAGO">Pago</SelectItem>
+                      <SelectItem value="ATRASADO">Atrasado</SelectItem>
+                      <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Lançamento</Label>
+                  <DatePicker
+                    value={lancamento}
+                    onChange={setLancamento}
+                    placeholder="Selecionar data"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-3">
+                  <Label className="text-xs text-muted-foreground">Palavra-chave</Label>
+                  <TagInput
+                    value={palavrasChave}
+                    onChange={setPalavrasChave}
+                    placeholder="Adicionar tags..."
+                  />
                 </div>
               </div>
-
-              {/* Participantes */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Participantes</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Credor *</Label>
-                      <Input
-                        placeholder="Nome do fornecedor"
-                        className="h-9"
-                        value={credor}
-                        onChange={(e) => setCredor(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Devedor *</Label>
-                      <Input
-                        placeholder="Nome do devedor"
-                        className="h-9"
-                        value={devedor}
-                        onChange={(e) => setDevedor(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Credor *</Label>
+                  <Input
+                    placeholder="Nome do fornecedor"
+                    className="h-9"
+                    value={credor}
+                    onChange={(e) => setCredor(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Devedor *</Label>
+                  <Input
+                    placeholder="Nome do devedor"
+                    className="h-9"
+                    value={devedor}
+                    onChange={(e) => setDevedor(e.target.value)}
+                  />
                 </div>
               </div>
-            </TabsContent>
-
-            {/* Dados Financeiros Tab */}
-            <TabsContent value="dados-financeiros" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
-              {/* Contábil */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Contábil</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Classificação Contábil
-                      </Label>
-                      <Input
-                        placeholder="Ex: 1.1.1.01.001"
-                        className="h-9"
-                        value={classificacaoContabil}
-                        onChange={(e) => setClassificacaoContabil(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Classificação Gerencial
-                      </Label>
-                      <Input
-                        placeholder="Ex: Operacional"
-                        className="h-9"
-                        value={classificacaoGerencial}
-                        onChange={(e) => setClassificacaoGerencial(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Centro de Custo
-                      </Label>
-                      <Input
-                        placeholder="Ex: Administrativo"
-                        className="h-9"
-                        value={centroCusto}
-                        onChange={(e) => setCentroCusto(e.target.value)}
-                      />
-                    </div>
-                  </div>
+            </div>
+            {/* Contábil */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Contábil</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Classificação Contábil
+                  </Label>
+                  <Input
+                    placeholder="Ex: 1.1.1.01.001"
+                    className="h-9"
+                    value={classificacaoContabil}
+                    onChange={(e) => setClassificacaoContabil(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Classificação Gerencial
+                  </Label>
+                  <Input
+                    placeholder="Ex: Operacional"
+                    className="h-9"
+                    value={classificacaoGerencial}
+                    onChange={(e) => setClassificacaoGerencial(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Centro de Custo
+                  </Label>
+                  <Input
+                    placeholder="Ex: Administrativo"
+                    className="h-9"
+                    value={centroCusto}
+                    onChange={(e) => setCentroCusto(e.target.value)}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Dados Financeiros */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Dados Financeiros</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Competência *
-                      </Label>
-                      <DatePicker
-                        value={competencia}
-                        onChange={setCompetencia}
-                        placeholder="Selecionar data"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Vencimento *
-                      </Label>
-                      <DatePicker
-                        value={vencimento}
-                        onChange={setVencimento}
-                        placeholder="Selecionar data"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Vencimento Alterado
-                      </Label>
-                      <DatePicker
-                        value={vencimentoAlterado}
-                        onChange={setVencimentoAlterado}
-                        placeholder="Indefinido"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Nº da Parcela
-                      </Label>
-                      <Input
-                        type="number"
-                        value={numeroParcela}
-                        onChange={(e) => setNumeroParcela(parseInt(e.target.value) || 1)}
-                        placeholder="1"
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Qtd. Total de Parcelas
-                      </Label>
-                      <Input
-                        type="number"
-                        value={hasInstallments ? numInstallments : ''}
-                        onChange={(e) => {
-                          setHasInstallments(true);
-                          setNumInstallments(parseInt(e.target.value) || 1);
-                        }}
-                        placeholder="1"
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Previsão</Label>
-                      <Input
-                        placeholder="Previsão"
-                        className="h-9"
-                        value={previsao}
-                        onChange={(e) => setPrevisao(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Transação</Label>
-                      <Input
-                        placeholder="Transação"
-                        className="h-9"
-                        value={transacao}
-                        onChange={(e) => setTransacao(e.target.value)}
-                      />
-                    </div>
-                  </div>
+            {/* Datas Financeiras */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Competência *
+                  </Label>
+                  <DatePicker
+                    value={competencia}
+                    onChange={setCompetencia}
+                    placeholder="Selecionar data"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Vencimento *
+                  </Label>
+                  <DatePicker
+                    value={vencimento}
+                    onChange={setVencimento}
+                    placeholder="Selecionar data"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Valores */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Valores</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Valor</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0,00"
-                        value={totalValue || ''}
-                        onChange={(e) => setTotalValue(parseFloat(e.target.value) || 0)}
-                        className="h-9 font-medium"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Desconto (-)
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0,00"
-                        value={discount || ''}
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Juros (+)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0,00"
-                        value={interest || ''}
-                        onChange={(e) => setInterest(parseFloat(e.target.value) || 0)}
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Total</Label>
-                      <Input
-                        value={formatCurrency(finalValue)}
-                        readOnly
-                        className="h-9 font-bold"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Valor Pago
-                      </Label>
-                      <Input
-                        value="R$ 0,00"
-                        readOnly
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Saldo</Label>
-                      <Input
-                        value={`-${formatCurrency(finalValue)}`}
-                        readOnly
-                        className="h-9 font-bold text-destructive"
-                      />
-                    </div>
-                  </div>
+            {/* Valores */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Valores</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Valor *</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={totalValue || ''}
+                    onChange={(e) => setTotalValue(parseFloat(e.target.value) || 0)}
+                    className="h-9 font-medium"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Desconto (-)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={discount || ''}
+                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Juros (+)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={interest || ''}
+                    onChange={(e) => setInterest(parseFloat(e.target.value) || 0)}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Total</Label>
+                  <Input
+                    value={formatCurrency(finalValue)}
+                    readOnly
+                    className="h-9 font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Valor Pago
+                  </Label>
+                  <Input
+                    value="R$ 0,00"
+                    readOnly
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Saldo</Label>
+                  <Input
+                    value={`-${formatCurrency(finalValue)}`}
+                    readOnly
+                    className="h-9 font-bold text-destructive"
+                  />
                 </div>
               </div>
-            </TabsContent>
+            </div>
 
-            {/* Adicionais Tab */}
-            <TabsContent value="adicionais" className="flex-1 overflow-y-auto max-h-[calc(90vh-180px)] px-6 py-4 space-y-6">
-              {/* Arquivos */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Arquivos</h3>
-                <div className="space-y-4">
-                  <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Clique aqui para inserir anexos
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      ou arraste e solte arquivos (.pdf, .txt, .xml)
-                    </p>
-                  </div>
-                </div>
+            {/* Arquivos */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Arquivos</h3>
+              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Clique aqui para inserir anexos
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ou arraste e solte arquivos (.pdf, .txt, .xml)
+                </p>
               </div>
+            </div>
 
-              {/* Notas */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Notas</h3>
-                <Textarea
-                  placeholder="Adicionar anotações..."
-                  className="min-h-[120px]"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+            {/* Notas */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">Notas</h3>
+              <Textarea
+                placeholder="Adicionar anotações..."
+                className="min-h-[120px]"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+              />
+            </div>
+          </div>
 
           {/* Error Message */}
           {error && (

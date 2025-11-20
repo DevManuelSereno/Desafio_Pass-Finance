@@ -19,7 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ListFilter, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Plus, Bot, BarChart3, Settings } from 'lucide-react';
+import { Search, ListFilter, MoreVertical, Moon, Sun, Globe, LogOut, ChevronDown, PanelLeft, CircleUser, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, RefreshCw, Plus, Bot, BarChart3, Settings, ChevronsUpDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useSidebar } from '@/contexts/sidebar-context';
@@ -57,6 +57,8 @@ export default function Home() {
     status: [],
     classification: []
   });
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme, mounted } = useTheme();
   const { toggleSidebar } = useSidebar();
@@ -103,13 +105,58 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  // Aplicar ordenação
+  const sortedBills = [...filteredBills].sort((a, b) => {
+    if (!sortColumn || !sortDirection) return 0;
+    
+    let aValue: any;
+    let bValue: any;
+    
+    switch (sortColumn) {
+      case 'id':
+        aValue = parseInt(a.id);
+        bValue = parseInt(b.id);
+        break;
+      case 'competencia':
+        aValue = new Date(a.competenceDate.split('/').reverse().join('-'));
+        bValue = new Date(b.competenceDate.split('/').reverse().join('-'));
+        break;
+      case 'vencimento':
+        aValue = new Date(a.dueDate.split('/').reverse().join('-'));
+        bValue = new Date(b.dueDate.split('/').reverse().join('-'));
+        break;
+      case 'status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      case 'classificacao':
+        aValue = a.classification.description;
+        bValue = b.classification.description;
+        break;
+      case 'parcela':
+        aValue = parseInt(a.installment.split('/')[0]);
+        bValue = parseInt(b.installment.split('/')[0]);
+        break;
+      case 'total':
+        aValue = a.amount;
+        bValue = b.amount;
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const totalPages = Math.ceil(filteredBills.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedBills.length / itemsPerPage);
   
   // Calcular os itens da página atual
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedBills = filteredBills.slice(startIndex, endIndex);
+  const paginatedBills = sortedBills.slice(startIndex, endIndex);
   
   const toggleSubFilter = (category: string, value: string) => {
     setSelectedSubFilters(prev => {
@@ -138,6 +185,46 @@ export default function Home() {
     acc[classification] = (acc[classification] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+  
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortColumn(null);
+        setSortDirection(null);
+      } else {
+        setSortDirection('asc');
+      }
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+  
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) {
+      return <ChevronsUpDown className="h-3.5 w-3.5 text-zinc-400" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="h-3.5 w-3.5" /> : 
+      <ChevronDown className="h-3.5 w-3.5" />;
+  };
+  
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Pago':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'Vencido':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'Pendente':
+        return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'Cancelado':
+        return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
+      default:
+        return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
+    }
+  };
   
   const handleSelectItem = (id: string) => {
     setSelectedItems(prev => 
@@ -214,19 +301,23 @@ export default function Home() {
           </div>
           
           <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-400" />
-              <Input
-                type="text"
-                placeholder={t('bills.search')}
-                className="h-9 w-64 pl-9 pr-16 text-sm rounded-xl"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <button
+              onClick={() => {
+                const event = new KeyboardEvent('keydown', {
+                  key: 'k',
+                  ctrlKey: true,
+                  bubbles: true
+                });
+                window.dispatchEvent(event);
+              }}
+              className="relative h-9 w-64 flex items-center gap-2 pl-9 pr-16 text-sm rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors text-left"
+            >
+              <Search className="absolute left-2.5 h-4 w-4 text-zinc-400" />
+              <span className="text-muted-foreground">{t('bills.search')}</span>
               <kbd className="pointer-events-none absolute right-3 top-2 inline-flex h-5 select-none items-center gap-1 rounded border border-zinc-200 bg-zinc-100 px-1.5 font-mono text-[10px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
                 CTRL+K
               </kbd>
-            </div>
+            </button>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             {/* Search Button (Mobile) */}
@@ -417,10 +508,10 @@ export default function Home() {
           {/* Toolbar */}
           <div className="border-b border-zinc-200 bg-white px-3 sm:px-4 md:px-6 py-3 dark:border-zinc-800 dark:bg-[#161616]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Button 
                   size="sm" 
-                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                  className="h-9 w-10 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
                   onClick={() => setShowAnalyticsModal(true)}
                 >
                   <BarChart3 className="h-3.5 w-3.5" />
@@ -430,7 +521,7 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg cursor-pointer bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%,transparent_100%)] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0] dark:before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.2)_50%,transparent_75%,transparent_100%)]"
+                    className="h-9 w-10 rounded-lg cursor-pointer bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%,transparent_100%)] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0] dark:before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.2)_50%,transparent_75%,transparent_100%)]"
                     onMouseEnter={() => setShowAITooltip(true)}
                     onMouseLeave={() => setShowAITooltip(false)}
                   >
@@ -474,7 +565,7 @@ export default function Home() {
                   <Input
                     type="text"
                     placeholder="Buscar"
-                    className="h-8 pl-8 pr-3 text-xs rounded-lg border-zinc-200 dark:border-zinc-700"
+                    className="h-9 pl-8 pr-3 text-sm rounded-lg border-zinc-200 dark:border-zinc-700"
                     value={tableSearchTerm}
                     onChange={(e) => setTableSearchTerm(e.target.value)}
                   />
@@ -486,10 +577,10 @@ export default function Home() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="h-8 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
+                      className="h-9 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
                     >
                       <ListFilter className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium">Status</span>
+                      <span className="text-sm font-medium">Status</span>
                       {selectedSubFilters.status.length > 0 && (
                         <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
                           {selectedSubFilters.status.length}
@@ -559,10 +650,10 @@ export default function Home() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="h-8 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
+                      className="h-9 gap-1.5 px-3 rounded-lg border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-dashed"
                     >
                       <ListFilter className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium">Classificação</span>
+                      <span className="text-sm font-medium">Classificação</span>
                       {selectedSubFilters.classification.length > 0 && (
                         <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
                           {selectedSubFilters.classification.length}
@@ -612,7 +703,7 @@ export default function Home() {
                               />
                               <span className="text-sm truncate">{classification}</span>
                             </div>
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{count}</span>
+                            <span className="text-sm text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0">{count}</span>
                           </div>
                         ))}
                       {Object.entries(classificationCounts).filter(([classification]) => 
@@ -630,23 +721,23 @@ export default function Home() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="h-8 gap-2 rounded-lg cursor-pointer"
+                  className="h-9 gap-2 rounded-lg cursor-pointer"
                   onClick={refetch}
                   disabled={loading}
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                  <span className="text-xs">Atualizar</span>
+                  <span className="text-sm">Atualizar</span>
                 </Button>
                 <ExportButton />
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
 
                 <Button 
                   size="sm" 
-                  className="h-8 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
+                  className="h-9 gap-2 rounded-lg bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
                   onClick={() => setShowPaymentModal(true)}
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span className="text-xs">Adicionar</span>
+                  <span className="text-sm">Adicionar</span>
                 </Button>
               </div>
             </div>
@@ -663,29 +754,97 @@ export default function Home() {
                   onChange={handleSelectAll}
                 />
               </TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.id')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.competence')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.due')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.payment')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-20">{t('bills.status')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[150px]">{t('bills.classification')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[150px]">{t('bills.participants')}</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-20">{t('bills.installment')}</TableHead>
-              <TableHead className="h-10 text-right text-xs font-medium text-zinc-600 dark:text-zinc-400 min-w-[100px]">{t('bills.total')}</TableHead>
+              <TableHead className="h-10 min-w-[100px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('id')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.id')}</span>
+                  {getSortIcon('id')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[120px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('competencia')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.competence')}</span>
+                  {getSortIcon('competencia')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[120px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('vencimento')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.due')}</span>
+                  {getSortIcon('vencimento')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[100px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('status')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.status')}</span>
+                  {getSortIcon('status')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[180px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('classificacao')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.classification')}</span>
+                  {getSortIcon('classificacao')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[100px]">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -ml-2 hover:bg-transparent"
+                  onClick={() => handleSort('parcela')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.installment')}</span>
+                  {getSortIcon('parcela')}
+                </Button>
+              </TableHead>
+              <TableHead className="h-10 min-w-[120px] text-right">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1.5 px-2 -mr-2 ml-auto hover:bg-transparent"
+                  onClick={() => handleSort('total')}
+                >
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t('bills.total')}</span>
+                  {getSortIcon('total')}
+                </Button>
+              </TableHead>
               <TableHead className="h-10 w-12 min-w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={11} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                <TableCell colSpan={8} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
                   Carregando dados...
                 </TableCell>
               </TableRow>
             )}
             {error && (
               <TableRow>
-                <TableCell colSpan={11} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
                     <Button size="sm" variant="outline" onClick={refetch}>
@@ -697,7 +856,7 @@ export default function Home() {
             )}
             {!loading && !error && paginatedBills.length === 0 && (
               <TableRow>
-                <TableCell colSpan={11} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                <TableCell colSpan={8} className="h-24 text-center text-sm text-zinc-500 dark:text-zinc-400">
                   Nenhuma conta encontrada.
                 </TableCell>
               </TableRow>
@@ -727,10 +886,9 @@ export default function Home() {
                   </TableCell>
                   <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.competenceDate}</TableCell>
                   <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.dueDate}</TableCell>
-                  <TableCell className="py-3 text-xs text-zinc-600 dark:text-zinc-400">{bill.paymentInfo}</TableCell>
                   <TableCell className="py-3">
                     <Badge
-                      variant="secondary"
+                      className={`${getStatusColor(bill.status)} border-0 font-medium`}
                     >
                       {bill.status}
                     </Badge>
@@ -741,14 +899,6 @@ export default function Home() {
                         <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.classification.code}</div>
                       )}
                       <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.classification.description}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <div className="space-y-0.5">
-                      <div className="text-xs text-zinc-900 dark:text-zinc-100">{bill.participants.name}</div>
-                      {bill.participants.secondary && (
-                        <div className="text-xs text-zinc-600 dark:text-zinc-400">{bill.participants.secondary}</div>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell className="py-3 text-xs text-zinc-900 dark:text-zinc-100">{bill.installment}</TableCell>

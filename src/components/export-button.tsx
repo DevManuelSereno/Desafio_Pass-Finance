@@ -96,7 +96,7 @@ export function ExportButton({ variant = 'outline', size = 'sm', className }: Ex
     <Button
       variant={variant}
       size={size}
-      className={`h-8 gap-2 rounded-lg cursor-pointer ${className || ''}`}
+      className={`h-9 gap-2 rounded-lg cursor-pointer ${className || ''}`}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -106,7 +106,7 @@ export function ExportButton({ variant = 'outline', size = 'sm', className }: Ex
       type="button"
     >
       <Download className="h-3.5 w-3.5" />
-      <span className="text-xs">{isExporting ? 'Exportando...' : 'Export'}</span>
+      <span className="text-sm">{isExporting ? 'Exportando...' : 'Export'}</span>
     </Button>
   );
 }
